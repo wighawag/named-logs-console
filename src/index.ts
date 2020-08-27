@@ -115,7 +115,6 @@ function enabled(name: string, {disabledRegexps, enabledRegexps}: {disabledRegex
 
   for (i = 0, len = enabledRegexps.length; i < len; i++) {
     if (enabledRegexps[i].test(name)) {
-      oldConsole.log({name, regex: enabledRegexps[i]});
       return true;
     }
   }
