@@ -8,7 +8,7 @@
     "moduleResolution": "node",
     "declaration": true,
     "declarationMap": true,
-    // "sourceMap": true, // TODO terser
+    "sourceMap": false, // TODO terser
     "outDir": "lib/esm"
   },
   "include": [

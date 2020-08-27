@@ -1,6 +1,6 @@
 {
   "name": "named-logs-console",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "console logger using named-logs facade for minimal lib overhead with full control",
   "main": "./lib/cjs/index.js",
   "module": "./lib/esm/index.js",
@@ -11,7 +11,7 @@
   "scripts": {
     "prepare": "npm run build",
     "dev": "tsc -w -p tsconfig.json",
-    "build": "tsc -p tsconfig.json && terser lib/esm/index.js -o lib/esm/index.js && tsc -p tsconfig-cjs.json && terser lib/cjs/index.js -o lib/cjs/index.js && tsc -p tsconfig-umd.json && terser lib/umd/index.js -o lib/umd/index.js",
+    "build": "tsc -p tsconfig.json && terser lib/esm/index.js -o lib/esm/index.js -m -c && tsc -p tsconfig-cjs.json && terser lib/cjs/index.js -m -c -o lib/cjs/index.js && tsc -p tsconfig-umd.json && terser lib/umd/index.js -m -c -o lib/umd/index.js",
     "test": "mocha anylogger.spec.js"
   },
   "author": "Ronan Sandford",
