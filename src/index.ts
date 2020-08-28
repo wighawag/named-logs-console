@@ -35,6 +35,7 @@ export const logs : {
   enable: (namespaces?: string) => void;
 } = (namespace: string): CLogger => {
   let logger = loggers[namespace];
+  
   if (logger) {
     return logger;
   }
@@ -43,7 +44,7 @@ export const logs : {
   
   return logger = loggers[namespace] = {
     get assert() {
-      return bindCall(oldConsole.assert, logger, Number.MAX_SAFE_INTEGER, 1)
+      return bindCall(oldConsole.assert, logger, traceLevel, 1)
     },
     get error() {
       return bindCall(oldConsole.error, logger, traceLevel, 1)
@@ -62,6 +63,12 @@ export const logs : {
     },
     get trace() {
       return bindCall(oldConsole.trace, logger, traceLevel, 6)
+    },
+    get dir() {
+      return bindCall(oldConsole.dir, logger, traceLevel, 5)
+    },
+    get table() {
+      return bindCall(oldConsole.table || oldConsole.debug, logger, traceLevel, 5)
     },
     get level() {return level;},
     set level(newLevel: number){
@@ -150,8 +157,28 @@ function process(
   }
 }
 
-export function replaceConsole(namespace?: string): Console {
-  (window as any).console = logs(namespace || '*');
+export function replaceConsole(namespace: string = "console"): Console {
+  const logger = logs(namespace);
+  (window as any).console = {
+    ...logger, 
+    clear: oldConsole.clear.bind(oldConsole),
+    count: noop,
+    countReset: noop,
+    dirxml: noop, // TODO ?
+    exception: noop,
+    group: noop,
+    groupCollapsed: noop,
+    groupEnd: noop,
+    time: noop, // TODO ?
+    timeEnd: noop, // TODO ?
+    timeLog: noop, // TODO ?
+    timeStamp: noop,
+    profile: noop,
+    profileEnd: noop,
+    // timeStamp: oldConsole.timeStamp.bind(oldConsole),
+    // profile: (oldConsole as any).profile.bind(oldConsole),
+    // profileEnd: (oldConsole as any).profileEnd.bind(oldConsole),
+  }
   return oldConsole;
 }
 
