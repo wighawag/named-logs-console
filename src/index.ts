@@ -100,11 +100,18 @@ logs.disable = () => {
   for (const namespace of Object.keys(loggers)) {
     loggers[namespace].enabled = false;
   }
+  try{
+    localStorage.removeItem("debug");
+  } catch(e) {}
+  
 }
 logs.enable = (namespaces?: string) => {
   disabledRegexps.splice(0, disabledRegexps.length);
   enabledRegexps.splice(0, enabledRegexps.length);
   process(namespaces || "*", {disabledRegexps, enabledRegexps}, (namespace, enabled) => loggers[namespace].enabled = enabled);
+  try{
+    localStorage.setItem("debug", namespaces || "*");
+  } catch(e) {}
 }
 
 function enabled(name: string, {disabledRegexps, enabledRegexps}: {disabledRegexps: RegExp[]; enabledRegexps: RegExp[]}): boolean {
