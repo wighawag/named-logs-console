@@ -1,25 +1,23 @@
 {
   "name": "named-logs-console",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "console logger using named-logs facade for minimal lib overhead with full control",
-  "main": "./lib/cjs/index.js",
+  "main": "./lib/umd/index.js",
   "module": "./lib/esm/index.js",
-  "browser": "./lib/umd/index.js",
   "files": [
     "lib/"
   ],
-  "scripts": {
-    "prepare": "npm run build",
-    "dev": "tsc -w -p tsconfig.json",
-    "build": "tsc -p tsconfig.json && terser lib/esm/index.js -o lib/esm/index.js -m -c && tsc -p tsconfig-cjs.json && terser lib/cjs/index.js -m -c -o lib/cjs/index.js && tsc -p tsconfig-umd.json && terser lib/umd/index.js -m -c -o lib/umd/index.js",
-    "test": "mocha anylogger.spec.js"
-  },
   "author": "Ronan Sandford",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com:wighawag/named-logs-console.git"
   },
+  "keywords": [
+    "console",
+    "logger",
+    "logging"
+  ],
   "dependencies": {
     "named-logs": "0.0.5"
   },
@@ -27,9 +25,9 @@
     "terser": "^5.2.1",
     "typescript": "^3.8.3"
   },
-  "keywords": [
-    "console",
-    "logger",
-    "logging"
-  ]
+  "scripts": {
+    "prepare": "npm run build",
+    "dev": "tsc -w -p tsconfig.json",
+    "build": "tsc -p tsconfig.json && terser lib/esm/index.js -o lib/esm/index.js -m -c && tsc -p tsconfig-cjs.json && terser lib/cjs/index.js -m -c -o lib/cjs/index.js && tsc -p tsconfig-umd.json && terser lib/umd/index.js -m -c -o lib/umd/index.js"
+  }
 }

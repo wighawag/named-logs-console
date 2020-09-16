@@ -28,8 +28,8 @@ const loggers: {[namespace: string]: CLogger} = {};
 
 export const logs : {
   (namespace: string): CLogger;
-  level: number;
-  traceLevel: number;
+  level: number; // TODO setting should affect all logger (unless set before ?)
+  traceLevel: number; // TODO setting should affect all logger (unless set before ?)
   setTraceLevelFor: (namespace: string, newLevel: number) => void;
   disable: () => void;
   enable: (namespaces?: string) => void;
@@ -108,6 +108,9 @@ logs.disable = () => {
 logs.enable = (namespaces?: string) => {
   disabledRegexps.splice(0, disabledRegexps.length);
   enabledRegexps.splice(0, enabledRegexps.length);
+  if (namespaces === "") {
+    namespaces = "*";
+  }
   process(namespaces || "*", {disabledRegexps, enabledRegexps}, (namespace, enabled) => loggers[namespace].enabled = enabled);
   try{
     localStorage.setItem("debug", namespaces || "*");
