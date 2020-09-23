@@ -209,7 +209,9 @@ const vars = location.search.slice(1).split("&");
 for (const variable of vars) {
   if (variable.startsWith("debug=")) {
     const val = variable.slice(6);
-    if (val && val !== '') {
+    if (val === '') {
+      logs.disable();
+    } else {
       logs.enable(val);
     }
   } else if (variable.startsWith("log=")) {
