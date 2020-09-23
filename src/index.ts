@@ -196,6 +196,7 @@ hook(logs);
 
 // TODO remove oldConsole.log calls
 try{
+  hook(logs);
   const str = localStorage.getItem("debug");
   if (str) {
     oldConsole.log(`enabling via local storage : ${str}`)
