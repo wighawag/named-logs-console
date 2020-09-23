@@ -110,10 +110,12 @@ logs.enable = (namespaces?: string) => {
   enabledRegexps.splice(0, enabledRegexps.length);
   if (namespaces === "") {
     namespaces = "*";
+  } else {
+    namespaces = namespaces || "*";
   }
-  process(namespaces || "*", {disabledRegexps, enabledRegexps}, (namespace, enabled) => loggers[namespace].enabled = enabled);
+  process(namespaces, {disabledRegexps, enabledRegexps}, (namespace, enabled) => loggers[namespace].enabled = enabled);
   try{
-    localStorage.setItem("debug", namespaces || "*");
+    localStorage.setItem("debug", namespaces);
   } catch(e) {}
 }
 
@@ -196,11 +198,9 @@ export function hookup() {
   hook(logs);
 }
 
-// TODO remove oldConsole.log calls
 try{
   const str = localStorage.getItem("debug");
-  if (str) {
-    oldConsole.log(`enabling via local storage : ${str}`)
+  if (str && str !== '') {
     logs.enable(str);
   }
 } catch(e) {}
@@ -208,15 +208,15 @@ try{
 const vars = location.search.slice(1).split("&");
 for (const variable of vars) {
   if (variable.startsWith("debug=")) {
-    oldConsole.log(`enabling via debug : ${variable.slice(6)}`);
-    logs.enable(variable.slice(6));
+    const val = variable.slice(6);
+    if (val && val !== '') {
+      logs.enable(val);
+    }
   } else if (variable.startsWith("log=")) {
     const val = variable.slice(4);
-    oldConsole.log(`level via log= : ${val}`);
     logs.level = (logLevels[val] || parseInt(val) || logs.level) as number;
   } else if (variable.startsWith("trace=")) {
     const val = variable.slice(6);
-    oldConsole.log(`trace via trace= : ${val}`);
     logs.traceLevel = (logLevels[val] || parseInt(val) || logs.level) as number;
   }
 }
