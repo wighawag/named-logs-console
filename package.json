@@ -1,6 +1,6 @@
 {
   "name": "named-logs-console",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "description": "console logger using named-logs facade for minimal lib overhead with full control",
   "main": "./lib/umd/index.js",
   "module": "./lib/esm/index.js",
@@ -19,7 +19,7 @@
     "logging"
   ],
   "dependencies": {
-    "named-logs": "^0.0.7"
+    "named-logs": "^0.0.9"
   },
   "devDependencies": {
     "terser": "^5.2.1",
@@ -28,6 +28,6 @@
   "scripts": {
     "prepare": "npm run build",
     "dev": "tsc -w -p tsconfig.json",
-    "build": "tsc -p tsconfig.json && terser lib/esm/index.js -o lib/esm/index.js -m -c && tsc -p tsconfig-cjs.json && terser lib/cjs/index.js -m -c -o lib/cjs/index.js && tsc -p tsconfig-umd.json && terser lib/umd/index.js -m -c -o lib/umd/index.js"
+    "build": "tsc -p tsconfig.json && terser lib/esm/index.js -o lib/esm/index.js -m -c && tsc -p tsconfig-umd.json && terser lib/umd/index.js -m -c -o lib/umd/index.js"
   }
 }
