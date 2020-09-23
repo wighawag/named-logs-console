@@ -1,6 +1,6 @@
 {
   "name": "named-logs-console",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "description": "console logger using named-logs facade for minimal lib overhead with full control",
   "main": "./lib/umd/index.js",
   "module": "./lib/esm/index.js",
@@ -19,7 +19,7 @@
     "logging"
   ],
   "dependencies": {
-    "named-logs": "^0.0.10"
+    "named-logs": "^0.0.12"
   },
   "devDependencies": {
     "terser": "^5.2.1",

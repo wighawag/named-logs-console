@@ -13,4 +13,5 @@ export declare const logs: {
     enable: (namespaces?: string) => void;
 };
 export declare function replaceConsole(namespace?: string): Console;
+export declare function hookup(): void;
 //# sourceMappingURL=index.d.ts.map

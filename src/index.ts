@@ -192,8 +192,9 @@ export function replaceConsole(namespace: string = "console"): Console {
   return oldConsole;
 }
 
-
-try{hook(logs);}catch(e){}// try catch to avoid tree shaking
+export function hookup() {
+  hook(logs);
+}
 
 // TODO remove oldConsole.log calls
 try{

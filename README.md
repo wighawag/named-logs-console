@@ -16,7 +16,8 @@ npm install named-logs named-logs-console
 
 in your index.js :
 ```js
-import 'named-logs-console';
+import {hookup} from 'named-logs-console';
+hookup();
 ```
 
 This will be default log all `named-logs` call
