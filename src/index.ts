@@ -194,10 +194,11 @@ export function replaceConsole(namespace: string = "console"): Console {
 
 hook(logs);
 
-
+// TODO remove oldConsole.log calls
 try{
   const str = localStorage.getItem("debug");
   if (str) {
+    oldConsole.log(`enabling via local storage : ${str}`)
     logs.enable(str);
   }
 } catch(e) {}
@@ -205,12 +206,15 @@ try{
 const vars = location.search.slice(1).split("&");
 for (const variable of vars) {
   if (variable.startsWith("debug=")) {
+    oldConsole.log(`enabling via debug : ${variable.slice(6)}`);
     logs.enable(variable.slice(6));
   } else if (variable.startsWith("log=")) {
     const val = variable.slice(4);
+    oldConsole.log(`level via log= : ${val}`);
     logs.level = (logLevels[val] || parseInt(val) || logs.level) as number;
   } else if (variable.startsWith("trace=")) {
     const val = variable.slice(6);
+    oldConsole.log(`trace via trace= : ${val}`);
     logs.traceLevel = (logLevels[val] || parseInt(val) || logs.level) as number;
   }
 }
