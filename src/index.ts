@@ -1,4 +1,4 @@
-import {hook, Logger} from "named-logs";
+import {hook, Logger} from 'named-logs';
 
 export type CLogger = Logger & {
   level: number;
@@ -7,7 +7,9 @@ export type CLogger = Logger & {
 };
 
 const noop = () => undefined;
-const oldConsole = window.console;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const W = typeof window !== 'undefined' ? window : (globalThis as any);
+const oldConsole = W.console;
 
 const disabledRegexps: RegExp[] = [];
 const enabledRegexps: RegExp[] = [];
@@ -26,7 +28,7 @@ function bindCall(logFunc: (...args: any[]) => void, logger: CLogger, localTrace
 
 const loggers: {[namespace: string]: CLogger} = {};
 
-export const logs : {
+export const logs: {
   (namespace: string): CLogger;
   level: number; // TODO setting should affect all logger (unless set before ?)
   traceLevel: number; // TODO setting should affect all logger (unless set before ?)
@@ -35,91 +37,102 @@ export const logs : {
   enable: (namespaces?: string) => void;
 } = (namespace: string): CLogger => {
   let logger = loggers[namespace];
-  
+
   if (logger) {
     return logger;
   }
   let level = logs.level;
   let traceLevel = logs.traceLevel;
-  
-  return logger = loggers[namespace] = {
-    get assert() {
-      return bindCall(oldConsole.assert, logger, traceLevel, 1)
-    },
-    get error() {
-      return bindCall(oldConsole.error, logger, traceLevel, 1)
-    },
-    get warn() {
-      return bindCall(oldConsole.warn, logger, traceLevel, 2)
-    },
-    get info() {
-      return bindCall(oldConsole.info, logger, traceLevel, 3)
-    },
-    get log() {
-      return bindCall(oldConsole.log, logger, traceLevel, 4)
-    },
-    get debug() {
-      return bindCall(oldConsole.debug, logger, traceLevel, 5)
-    },
-    get trace() {
-      return bindCall(oldConsole.trace, logger, traceLevel, 6)
-    },
-    get dir() {
-      return bindCall(oldConsole.dir, logger, traceLevel, 5)
-    },
-    get table() {
-      return bindCall(oldConsole.table || oldConsole.debug, logger, traceLevel, 5)
-    },
-    get level() {return level;},
-    set level(newLevel: number){
-      level = newLevel;
-    },
-    get traceLevel() {return traceLevel;},
-    set traceLevel(newLevel: number) {
-      traceLevel = newLevel;
-    },
-    enabled: enabled(namespace, {disabledRegexps, enabledRegexps})
-  };
-}
 
-const logLevels: {[name: string]: number} = {error:1, warn:2, info:3, log:4, debug:5, trace:6};
+  return (logger = loggers[namespace] =
+    {
+      get assert() {
+        return bindCall(oldConsole.assert, logger, traceLevel, 1);
+      },
+      get error() {
+        return bindCall(oldConsole.error, logger, traceLevel, 1);
+      },
+      get warn() {
+        return bindCall(oldConsole.warn, logger, traceLevel, 2);
+      },
+      get info() {
+        return bindCall(oldConsole.info, logger, traceLevel, 3);
+      },
+      get log() {
+        return bindCall(oldConsole.log, logger, traceLevel, 4);
+      },
+      get debug() {
+        return bindCall(oldConsole.debug, logger, traceLevel, 5);
+      },
+      get trace() {
+        return bindCall(oldConsole.trace, logger, traceLevel, 6);
+      },
+      get dir() {
+        return bindCall(oldConsole.dir, logger, traceLevel, 5);
+      },
+      get table() {
+        return bindCall(oldConsole.table || oldConsole.debug, logger, traceLevel, 5);
+      },
+      get level() {
+        return level;
+      },
+      set level(newLevel: number) {
+        level = newLevel;
+      },
+      get traceLevel() {
+        return traceLevel;
+      },
+      set traceLevel(newLevel: number) {
+        traceLevel = newLevel;
+      },
+      enabled: enabled(namespace, {disabledRegexps, enabledRegexps}),
+    });
+};
 
-logs.level = 2
+const logLevels: {[name: string]: number} = {error: 1, warn: 2, info: 3, log: 4, debug: 5, trace: 6};
+
+logs.level = 2;
 logs.traceLevel = 6;
 
 logs.setTraceLevelFor = (namespaces: string, newLevel: number) => {
-  process(namespaces || "*", {disabledRegexps: [], enabledRegexps: []},(namespace, enabled) => {
+  process(namespaces || '*', {disabledRegexps: [], enabledRegexps: []}, (namespace, enabled) => {
     if (enabled) {
       loggers[namespace].traceLevel = newLevel;
     }
   });
-}
+};
 logs.disable = () => {
   disabledRegexps.splice(0, disabledRegexps.length);
   enabledRegexps.splice(0, enabledRegexps.length);
   for (const namespace of Object.keys(loggers)) {
     loggers[namespace].enabled = false;
   }
-  try{
-    localStorage.removeItem("debug");
-  } catch(e) {}
-  
-}
+  try {
+    localStorage.removeItem('debug');
+  } catch (e) {}
+};
 logs.enable = (namespaces?: string) => {
   disabledRegexps.splice(0, disabledRegexps.length);
   enabledRegexps.splice(0, enabledRegexps.length);
-  if (namespaces === "") {
-    namespaces = "*";
+  if (namespaces === '') {
+    namespaces = '*';
   } else {
-    namespaces = namespaces || "*";
+    namespaces = namespaces || '*';
   }
-  process(namespaces, {disabledRegexps, enabledRegexps}, (namespace, enabled) => loggers[namespace].enabled = enabled);
-  try{
-    localStorage.setItem("debug", namespaces);
-  } catch(e) {}
-}
+  process(
+    namespaces,
+    {disabledRegexps, enabledRegexps},
+    (namespace, enabled) => (loggers[namespace].enabled = enabled)
+  );
+  try {
+    localStorage.setItem('debug', namespaces);
+  } catch (e) {}
+};
 
-function enabled(name: string, {disabledRegexps, enabledRegexps}: {disabledRegexps: RegExp[]; enabledRegexps: RegExp[]}): boolean {
+function enabled(
+  name: string,
+  {disabledRegexps, enabledRegexps}: {disabledRegexps: RegExp[]; enabledRegexps: RegExp[]}
+): boolean {
   if (name[name.length - 1] === '*') {
     return true;
   }
@@ -139,7 +152,6 @@ function enabled(name: string, {disabledRegexps, enabledRegexps}: {disabledRegex
   }
   return false;
 }
-
 
 function process(
   namespaces: string,
@@ -163,16 +175,16 @@ function process(
       enabledRegexps.push(new RegExp('^' + namespaces + '$'));
     }
   }
-  
-  for (const namespace of Object.keys(loggers)) { 
+
+  for (const namespace of Object.keys(loggers)) {
     func(namespace, enabled(namespace, {disabledRegexps, enabledRegexps}));
   }
 }
 
-export function replaceConsole(namespace: string = "console"): Console {
+export function replaceConsole(namespace = 'console'): Console {
   const logger = logs(namespace);
-  (window as any).console = {
-    ...logger, 
+  W.console = {
+    ...logger,
     clear: oldConsole.clear.bind(oldConsole),
     count: noop,
     countReset: noop,
@@ -190,34 +202,34 @@ export function replaceConsole(namespace: string = "console"): Console {
     // timeStamp: oldConsole.timeStamp.bind(oldConsole),
     // profile: (oldConsole as any).profile.bind(oldConsole),
     // profileEnd: (oldConsole as any).profileEnd.bind(oldConsole),
-  }
+  };
   return oldConsole;
 }
 
-export function hookup() {
+export function hookup(): void {
   hook(logs);
 }
 
-try{
-  const str = localStorage.getItem("debug");
+try {
+  const str = localStorage.getItem('debug');
   if (str && str !== '') {
     logs.enable(str);
   }
-} catch(e) {}
+} catch (e) {}
 
-const vars = location.search.slice(1).split("&");
+const vars = location.search.slice(1).split('&');
 for (const variable of vars) {
-  if (variable.startsWith("debug=")) {
+  if (variable.startsWith('debug=')) {
     const val = variable.slice(6);
     if (val === '') {
       logs.disable();
     } else {
       logs.enable(val);
     }
-  } else if (variable.startsWith("log=")) {
+  } else if (variable.startsWith('log=')) {
     const val = variable.slice(4);
     logs.level = (logLevels[val] || parseInt(val) || logs.level) as number;
-  } else if (variable.startsWith("trace=")) {
+  } else if (variable.startsWith('trace=')) {
     const val = variable.slice(6);
     logs.traceLevel = (logLevels[val] || parseInt(val) || logs.level) as number;
   }
