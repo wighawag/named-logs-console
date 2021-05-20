@@ -159,7 +159,7 @@ try {
     }
 }
 catch (e) { }
-const vars = location.search.slice(1).split('&');
+const vars = W.location ? W.location.search.slice(1).split('&') : [];
 for (const variable of vars) {
     if (variable.startsWith('debug=')) {
         const val = variable.slice(6);
