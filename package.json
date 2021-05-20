@@ -1,8 +1,8 @@
 {
   "name": "named-logs-console",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "console logger using named-logs facade for minimal lib overhead with full control",
-  "main": "dist/esm/index.js",
+  "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
   "types": "dist/esm/index.d.ts",
   "files": [
@@ -39,7 +39,8 @@
     "prepare": "node .setup.js && npm run lint && npm run build",
     "dev": "tsc -w -p tsconfig.json",
     "build:esm": "rimraf dist/esm && tsc -p tsconfig.json",
-    "build": "run-s build:esm",
+    "build:cjs": "rimraf dist/cjs && tsc -p tsconfig-cjs.json",
+    "build": "run-s build:esm build:cjs",
     "lint": "eslint src/**/*.{js,ts,tsx} --quiet --fix"
   }
 }
