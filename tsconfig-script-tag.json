@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "target": "ES5",
+    "module": "None",
+    "outDir": "dist/script-tag",
+    "sourceMap": false, // TODO terser
+  },
+  "include": ["./script-tag"]
+}

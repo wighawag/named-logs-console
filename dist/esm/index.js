@@ -1,7 +1,6 @@
 import { hook } from 'named-logs';
 const noop = () => undefined;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const W = typeof window !== 'undefined' ? window : globalThis;
+const W = (typeof window !== 'undefined' ? window : globalThis);
 const oldConsole = W.console;
 const disabledRegexps = [];
 const enabledRegexps = [];
@@ -74,7 +73,7 @@ const logLevels = { error: 1, warn: 2, info: 3, log: 4, debug: 5, trace: 6 };
 logs.level = 2;
 logs.traceLevel = 6;
 logs.setTraceLevelFor = (namespaces, newLevel) => {
-    process(namespaces || '*', { disabledRegexps: [], enabledRegexps: [] }, (namespace, enabled) => {
+    processNamespaces(namespaces || '*', { disabledRegexps: [], enabledRegexps: [] }, (namespace, enabled) => {
         if (enabled) {
             loggers[namespace].traceLevel = newLevel;
         }
@@ -100,7 +99,7 @@ logs.enable = (namespaces) => {
     else {
         namespaces = namespaces || '*';
     }
-    process(namespaces, { disabledRegexps, enabledRegexps }, (namespace, enabled) => (loggers[namespace].enabled = enabled));
+    processNamespaces(namespaces, { disabledRegexps, enabledRegexps }, (namespace, enabled) => (loggers[namespace].enabled = enabled));
     try {
         localStorage.setItem('debug', namespaces);
     }
@@ -124,7 +123,7 @@ function enabled(name, { disabledRegexps, enabledRegexps }) {
     }
     return false;
 }
-function process(namespaces, { disabledRegexps, enabledRegexps }, func) {
+function processNamespaces(namespaces, { disabledRegexps, enabledRegexps }, func) {
     const split = (typeof namespaces === 'string' ? namespaces : '').split(/[\s,]+/);
     const len = split.length;
     for (let i = 0; i < len; i++) {

@@ -1,6 +1,17 @@
-import {hook, Logger} from 'named-logs';
-
-export type CLogger = Logger & {
+/* eslint-disable @typescript-eslint/no-explicit-any */
+type Logger = {
+  readonly assert: (condition?: boolean, ...data: any[]) => void;
+  readonly error: (...data: any[]) => void;
+  readonly warn: (...data: any[]) => void;
+  readonly info: (...data: any[]) => void;
+  readonly log: (...data: any[]) => void;
+  readonly debug: (...data: any[]) => void;
+  readonly dir: (item?: any, options?: any) => void;
+  readonly table: (tabularData?: any, properties?: string[]) => void;
+  readonly trace: (...data: any[]) => void;
+};
+/* eslint-enable @typescript-eslint/no-explicit-any */
+type CLogger = Logger & {
   level: number;
   traceLevel: number;
   enabled: boolean;
@@ -32,7 +43,7 @@ function bindCall<T>(logFunc: (...args: T[]) => void, logger: CLogger, localTrac
 
 const loggers: {[namespace: string]: CLogger} = {};
 
-export const logs: {
+const logs: {
   (namespace: string): CLogger;
   level: number; // TODO setting should affect all logger (unless set before ?)
   traceLevel: number; // TODO setting should affect all logger (unless set before ?)
@@ -185,35 +196,6 @@ function processNamespaces(
   }
 }
 
-export function replaceConsole(namespace = 'console'): Console {
-  const logger = logs(namespace);
-  W.console = {
-    ...logger,
-    clear: oldConsole.clear.bind(oldConsole),
-    count: noop,
-    countReset: noop,
-    dirxml: noop, // TODO ?
-    exception: noop,
-    group: noop,
-    groupCollapsed: noop,
-    groupEnd: noop,
-    time: noop, // TODO ?
-    timeEnd: noop, // TODO ?
-    timeLog: noop, // TODO ?
-    timeStamp: noop,
-    profile: noop,
-    profileEnd: noop,
-    // timeStamp: oldConsole.timeStamp.bind(oldConsole),
-    // profile: (oldConsole as any).profile.bind(oldConsole),
-    // profileEnd: (oldConsole as any).profileEnd.bind(oldConsole),
-  } as unknown as Console;
-  return oldConsole;
-}
-
-export function hookup(): void {
-  hook(logs);
-}
-
 try {
   const str = localStorage.getItem('debug');
   if (str && str !== '') {
@@ -238,3 +220,5 @@ for (const variable of vars) {
     logs.traceLevel = (logLevels[val] || parseInt(val) || logs.level) as number;
   }
 }
+
+(window as any)._logFactory = logs;
