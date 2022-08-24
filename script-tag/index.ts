@@ -196,12 +196,30 @@ function processNamespaces(
   }
 }
 
-try {
-  const str = localStorage.getItem('debug');
-  if (str && str !== '') {
-    logs.enable(str);
+if (typeof localStorage !== 'undefined') {
+  try {
+    const str = localStorage.getItem('debug');
+    if (str && str !== '') {
+      logs.enable(str);
+    }
+  } catch (e) {}
+} else if (typeof process !== 'undefined') {
+  let val = process.env['NAMED_LOGS'];
+  if (val) {
+    logs.enable(val);
+  } else {
+    logs.disable();
   }
-} catch (e) {}
+  val = process.env['NAMED_LOGS_LEVEL'];
+  if (val) {
+    logs.level = (logLevels[val] || parseInt(val) || logs.level) as number;
+  }
+
+  val = process.env['NAMED_LOGS_TRACE_LEVEL'];
+  if (val) {
+    logs.traceLevel = (logLevels[val] || parseInt(val) || logs.level) as number;
+  }
+}
 
 const vars = W.location ? W.location.search.slice(1).split('&') : [];
 for (const variable of vars) {
@@ -221,4 +239,8 @@ for (const variable of vars) {
   }
 }
 
-(window as any)._logFactory = logs;
+if (typeof window !== undefined) {
+  (window as any)._logFactory = logs;
+} else if (typeof global !== undefined) {
+  (global as any)._logFactory = logs;
+}
