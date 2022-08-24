@@ -8,6 +8,7 @@ declare type Logger = {
     readonly dir: (item?: any, options?: any) => void;
     readonly table: (tabularData?: any, properties?: string[]) => void;
     readonly trace: (...data: any[]) => void;
+    readonly write: (msg: string) => void;
 };
 declare type CLogger = Logger & {
     level: number;
@@ -27,6 +28,7 @@ declare function bindCall<T>(logFunc: (...args: T[]) => void, logger: CLogger, l
 declare const loggers: {
     [namespace: string]: CLogger;
 };
+declare function write(msg: string): void;
 declare const logs: {
     (namespace: string): CLogger;
     level: number;

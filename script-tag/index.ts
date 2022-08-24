@@ -9,6 +9,7 @@ type Logger = {
   readonly dir: (item?: any, options?: any) => void;
   readonly table: (tabularData?: any, properties?: string[]) => void;
   readonly trace: (...data: any[]) => void;
+  readonly write: (msg: string) => void;
 };
 /* eslint-enable @typescript-eslint/no-explicit-any */
 type CLogger = Logger & {
@@ -43,6 +44,10 @@ function bindCall<T>(logFunc: (...args: T[]) => void, logger: CLogger, localTrac
 
 const loggers: {[namespace: string]: CLogger} = {};
 
+function write(msg: string) {
+  process.stdout.write(msg);
+}
+
 const logs: {
   (namespace: string): CLogger;
   level: number; // TODO setting should affect all logger (unless set before ?)
@@ -72,6 +77,13 @@ const logs: {
       },
       get info() {
         return bindCall(oldConsole.info, logger, traceLevel, 3);
+      },
+      get write() {
+        if (typeof process !== 'undefined') {
+          return bindCall(write, logger, traceLevel, 3);
+        } else {
+          return bindCall(oldConsole.info, logger, traceLevel, 3);
+        }
       },
       get log() {
         return bindCall(oldConsole.log, logger, traceLevel, 4);
