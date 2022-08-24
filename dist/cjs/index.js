@@ -21,6 +21,9 @@ function bindCall(logFunc, logger, localTraceLevel, level) {
     }
 }
 const loggers = {};
+function write(msg) {
+    process.stdout.write(msg);
+}
 const logs = (namespace) => {
     let logger = loggers[namespace];
     if (logger) {
@@ -41,6 +44,14 @@ const logs = (namespace) => {
             },
             get info() {
                 return bindCall(oldConsole.info, logger, traceLevel, 3);
+            },
+            get write() {
+                if (typeof process !== 'undefined') {
+                    return bindCall(write, logger, traceLevel, 3);
+                }
+                else {
+                    return bindCall(oldConsole.info, logger, traceLevel, 3);
+                }
             },
             get log() {
                 return bindCall(oldConsole.log, logger, traceLevel, 4);

@@ -21,7 +21,7 @@
     "logging"
   ],
   "dependencies": {
-    "named-logs": "0.1.0"
+    "named-logs": "0.2.0"
   },
   "devDependencies": {
     "@types/node": "^15.3.0",

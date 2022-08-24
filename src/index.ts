@@ -32,6 +32,10 @@ function bindCall<T>(logFunc: (...args: T[]) => void, logger: CLogger, localTrac
 
 const loggers: {[namespace: string]: CLogger} = {};
 
+function write(msg: string) {
+  process.stdout.write(msg);
+}
+
 export const logs: {
   (namespace: string): CLogger;
   level: number; // TODO setting should affect all logger (unless set before ?)
@@ -61,6 +65,13 @@ export const logs: {
       },
       get info() {
         return bindCall(oldConsole.info, logger, traceLevel, 3);
+      },
+      get write() {
+        if (typeof process !== 'undefined') {
+          return bindCall(write, logger, traceLevel, 3);
+        } else {
+          return bindCall(oldConsole.info, logger, traceLevel, 3);
+        }
       },
       get log() {
         return bindCall(oldConsole.log, logger, traceLevel, 4);
