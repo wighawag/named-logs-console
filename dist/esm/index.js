@@ -197,10 +197,10 @@ for (const variable of vars) {
         logs.traceLevel = (logLevels[val] || parseInt(val) || logs.level);
     }
 }
-if (typeof window !== undefined) {
+if (typeof window !== 'undefined') {
     window._logFactory = logs;
 }
-else if (typeof global !== undefined) {
+else if (typeof global !== 'undefined') {
     global._logFactory = logs;
 }
 //# sourceMappingURL=index.js.map
