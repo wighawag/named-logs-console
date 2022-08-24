@@ -157,13 +157,32 @@ function hookup() {
     named_logs_1.hook(exports.logs);
 }
 exports.hookup = hookup;
-try {
-    const str = localStorage.getItem('debug');
-    if (str && str !== '') {
-        exports.logs.enable(str);
+if (typeof localStorage !== 'undefined') {
+    try {
+        const str = localStorage.getItem('debug');
+        if (str && str !== '') {
+            exports.logs.enable(str);
+        }
+    }
+    catch (e) { }
+}
+else if (typeof process !== 'undefined') {
+    let val = process.env['NAMED_LOGS'];
+    if (val) {
+        exports.logs.enable(val);
+    }
+    else {
+        exports.logs.disable();
+    }
+    val = process.env['NAMED_LOGS_LEVEL'];
+    if (val) {
+        exports.logs.level = (logLevels[val] || parseInt(val) || exports.logs.level);
+    }
+    val = process.env['NAMED_LOGS_TRACE_LEVEL'];
+    if (val) {
+        exports.logs.traceLevel = (logLevels[val] || parseInt(val) || exports.logs.level);
     }
 }
-catch (e) { }
 const vars = W.location ? W.location.search.slice(1).split('&') : [];
 for (const variable of vars) {
     if (variable.startsWith('debug=')) {
