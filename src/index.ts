@@ -257,8 +257,8 @@ for (const variable of vars) {
   }
 }
 
-if (typeof window !== undefined) {
+if (typeof window !== 'undefined') {
   (window as any)._logFactory = logs;
-} else if (typeof global !== undefined) {
+} else if (typeof global !== 'undefined') {
   (global as any)._logFactory = logs;
 }
