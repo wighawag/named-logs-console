@@ -256,3 +256,9 @@ for (const variable of vars) {
     logs.traceLevel = (logLevels[val] || parseInt(val) || logs.level) as number;
   }
 }
+
+if (typeof window !== undefined) {
+  (window as any)._logFactory = logs;
+} else if (typeof global !== undefined) {
+  (global as any)._logFactory = logs;
+}
