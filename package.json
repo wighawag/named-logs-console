@@ -1,6 +1,6 @@
 {
   "name": "named-logs-console",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "console logger using named-logs facade for minimal lib overhead with full control",
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
@@ -25,11 +25,6 @@
   },
   "devDependencies": {
     "@types/node": "^15.3.0",
-    "@typescript-eslint/eslint-plugin": "^4.24.0",
-    "@typescript-eslint/parser": "^4.24.0",
-    "eslint": "^7.7.0",
-    "eslint-config-prettier": "^8.3.0",
-    "eslint-plugin-prettier": "^3.1.4",
     "npm-run-all": "^4.1.5",
     "prettier": "^2.0.5",
     "rimraf": "^3.0.2",
@@ -37,13 +32,14 @@
     "typescript": "^4.2.4"
   },
   "scripts": {
-    "prepare": "node .setup.js && npm run lint && npm run build",
+    "prepare": "node .setup.js && npm run format:fix && npm run build",
     "dev": "tsc -w -p tsconfig.json",
     "build:esm": "rimraf dist/esm && tsc -p tsconfig.json",
     "build:cjs": "rimraf dist/cjs && tsc -p tsconfig-cjs.json",
     "build:umd": "rimraf dist/umd && tsc -p tsconfig-umd.json && terser dist/umd/index.js -c -m -o dist/umd/index.js",
     "build:script-tag": "rimraf dist/script-tag && tsc -p tsconfig-script-tag.json && terser dist/script-tag/index.js -c -m -o dist/script-tag/index.js",
     "build": "run-s build:*",
-    "lint": "eslint src/**/*.{js,ts,tsx} --quiet --fix"
+    "format": "prettier --check .",
+    "format:fix": "prettier --write ."
   }
 }

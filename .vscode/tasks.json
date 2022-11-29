@@ -4,9 +4,7 @@
 		{
 			"type": "npm",
 			"script": "build",
-			"problemMatcher": [
-				"$tsc"
-			],
+			"problemMatcher": ["$tsc"],
 			"group": "build",
 			"label": "npm: build",
 			"detail": "tsc -p tsconfig.json && terser lib/esm/index.js -o lib/esm/index.js -m -c && tsc -p tsconfig-umd.json && terser lib/umd/index.js -m -c -o lib/umd/index.js"

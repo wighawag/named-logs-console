@@ -15,6 +15,7 @@ npm install named-logs named-logs-console
 # use
 
 in your index.js :
+
 ```js
 import {hookup} from 'named-logs-console';
 hookup();
@@ -22,15 +23,14 @@ hookup();
 
 This will be default log all `named-logs` call
 
-On a web page, 
+On a web page,
 
 if the query string contains `debug=<namespace>` it will enable only the namespaces listed there (separated per commas)
 
 if the query string contains `log=<logLevel>` it will set the global log level to the one specified.
 
-For logging inside the app you can import `named-logs` 
+For logging inside the app you can import `named-logs`
 This will allow you to extract that code into the library without importing the overhead of `named-logs-console`
-
 
 ```js
 import {logs} from 'named-logs';
@@ -48,6 +48,7 @@ logs('myLibrary').enabled = false;
 ```
 
 You can also set global settings
+
 ```js
 import {logs} from 'named-logs-console';
 logs.level = 0; // desactivate all
