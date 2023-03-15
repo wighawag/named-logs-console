@@ -65,6 +65,15 @@ export const logs = (namespace) => {
             get table() {
                 return bindCall(oldConsole.table || oldConsole.debug, logger, traceLevel, 5);
             },
+            get time() {
+                return bindCall(oldConsole.time || oldConsole.debug, logger, traceLevel, 5);
+            },
+            get timeEnd() {
+                return bindCall(oldConsole.timeEnd || oldConsole.debug, logger, traceLevel, 5);
+            },
+            get timeLog() {
+                return bindCall(oldConsole.timeLog || oldConsole.debug, logger, traceLevel, 5);
+            },
             get level() {
                 return level;
             },
@@ -156,7 +165,7 @@ function processNamespaces(namespaces, { disabledRegexps, enabledRegexps }, func
 }
 export function replaceConsole(namespace = 'console') {
     const logger = logs(namespace);
-    W.console = Object.assign(Object.assign({}, logger), { clear: oldConsole.clear.bind(oldConsole), count: noop, countReset: noop, dirxml: noop, exception: noop, group: noop, groupCollapsed: noop, groupEnd: noop, time: noop, timeEnd: noop, timeLog: noop, timeStamp: noop, profile: noop, profileEnd: noop });
+    W.console = Object.assign(Object.assign({}, logger), { clear: oldConsole.clear.bind(oldConsole), count: noop, countReset: noop, dirxml: noop, exception: noop, group: noop, groupCollapsed: noop, groupEnd: noop, timeStamp: noop, profile: noop, profileEnd: noop });
     return oldConsole;
 }
 export function hookup() {

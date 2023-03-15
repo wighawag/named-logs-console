@@ -88,6 +88,15 @@ export const logs: {
 			get table() {
 				return bindCall(oldConsole.table || oldConsole.debug, logger, traceLevel, 5);
 			},
+			get time() {
+				return bindCall(oldConsole.time || oldConsole.debug, logger, traceLevel, 5);
+			},
+			get timeEnd() {
+				return bindCall(oldConsole.timeEnd || oldConsole.debug, logger, traceLevel, 5);
+			},
+			get timeLog() {
+				return bindCall(oldConsole.timeLog || oldConsole.debug, logger, traceLevel, 5);
+			},
 			get level() {
 				return level;
 			},
@@ -208,9 +217,6 @@ export function replaceConsole(namespace = 'console'): Console {
 		group: noop,
 		groupCollapsed: noop,
 		groupEnd: noop,
-		time: noop, // TODO ?
-		timeEnd: noop, // TODO ?
-		timeLog: noop, // TODO ?
 		timeStamp: noop,
 		profile: noop,
 		profileEnd: noop,

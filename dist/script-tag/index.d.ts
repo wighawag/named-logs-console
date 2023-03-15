@@ -7,6 +7,9 @@ declare type Logger = {
     readonly debug: (...data: any[]) => void;
     readonly dir: (item?: any, options?: any) => void;
     readonly table: (tabularData?: any, properties?: string[]) => void;
+    readonly time: (label: string) => void;
+    readonly timeEnd: (label: string) => void;
+    readonly timeLog: (label?: string) => void;
     readonly trace: (...data: any[]) => void;
     readonly write: (msg: string) => void;
 };

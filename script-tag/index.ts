@@ -8,6 +8,9 @@ type Logger = {
 	readonly debug: (...data: any[]) => void;
 	readonly dir: (item?: any, options?: any) => void;
 	readonly table: (tabularData?: any, properties?: string[]) => void;
+	readonly time: (label: string) => void;
+	readonly timeEnd: (label: string) => void;
+	readonly timeLog: (label?: string) => void;
 	readonly trace: (...data: any[]) => void;
 	readonly write: (msg: string) => void;
 };
@@ -99,6 +102,15 @@ const logs: {
 			},
 			get table() {
 				return bindCall(oldConsole.table || oldConsole.debug, logger, traceLevel, 5);
+			},
+			get time() {
+				return bindCall(oldConsole.time || oldConsole.debug, logger, traceLevel, 5);
+			},
+			get timeEnd() {
+				return bindCall(oldConsole.timeEnd || oldConsole.debug, logger, traceLevel, 5);
+			},
+			get timeLog() {
+				return bindCall(oldConsole.timeLog || oldConsole.debug, logger, traceLevel, 5);
 			},
 			get level() {
 				return level;
