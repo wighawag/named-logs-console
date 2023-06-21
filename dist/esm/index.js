@@ -1,12 +1,12 @@
 import { hook } from 'named-logs';
-const noop = () => undefined;
+const nop = () => undefined;
 const W = (typeof window !== 'undefined' ? window : globalThis);
 const oldConsole = W.console;
 const disabledRegexps = [];
 const enabledRegexps = [];
 function bindCall(logFunc, logger, localTraceLevel, level) {
-    if (logger.enabled && (logger.level >= level || logs.level >= level)) {
-        if (localTraceLevel <= level || logs.traceLevel <= level) {
+    if (logger.enabled && (logger.level >= level || factory.level >= level)) {
+        if (localTraceLevel <= level || factory.traceLevel <= level) {
             return oldConsole.trace.bind(oldConsole);
         }
         else {
@@ -14,20 +14,20 @@ function bindCall(logFunc, logger, localTraceLevel, level) {
         }
     }
     else {
-        return noop;
+        return nop;
     }
 }
 const loggers = {};
 function write(msg) {
     process.stdout.write(msg);
 }
-export const logs = (namespace) => {
+export const factory = (namespace) => {
     let logger = loggers[namespace];
     if (logger) {
         return logger;
     }
-    let level = logs.level;
-    let traceLevel = logs.traceLevel;
+    let level = factory.level;
+    let traceLevel = factory.traceLevel;
     return (logger = loggers[namespace] =
         {
             get assert() {
@@ -90,16 +90,16 @@ export const logs = (namespace) => {
         });
 };
 const logLevels = { error: 1, warn: 2, info: 3, log: 4, debug: 5, trace: 6 };
-logs.level = 2;
-logs.traceLevel = 6;
-logs.setTraceLevelFor = (namespaces, newLevel) => {
+factory.level = 2;
+factory.traceLevel = 6;
+factory.setTraceLevelFor = (namespaces, newLevel) => {
     processNamespaces(namespaces || '*', { disabledRegexps: [], enabledRegexps: [] }, (namespace, enabled) => {
         if (enabled) {
             loggers[namespace].traceLevel = newLevel;
         }
     });
 };
-logs.disable = () => {
+factory.disable = () => {
     disabledRegexps.splice(0, disabledRegexps.length);
     enabledRegexps.splice(0, enabledRegexps.length);
     for (const namespace of Object.keys(loggers)) {
@@ -110,7 +110,7 @@ logs.disable = () => {
     }
     catch (e) { }
 };
-logs.enable = (namespaces) => {
+factory.enable = (namespaces) => {
     disabledRegexps.splice(0, disabledRegexps.length);
     enabledRegexps.splice(0, enabledRegexps.length);
     if (namespaces === '') {
@@ -164,18 +164,18 @@ function processNamespaces(namespaces, { disabledRegexps, enabledRegexps }, func
     }
 }
 export function replaceConsole(namespace = 'console') {
-    const logger = logs(namespace);
-    W.console = Object.assign(Object.assign({}, logger), { clear: oldConsole.clear.bind(oldConsole), count: noop, countReset: noop, dirxml: noop, exception: noop, group: noop, groupCollapsed: noop, groupEnd: noop, timeStamp: noop, profile: noop, profileEnd: noop });
+    const logger = factory(namespace);
+    W.console = Object.assign(Object.assign({}, logger), { clear: oldConsole.clear.bind(oldConsole), count: nop, countReset: nop, dirxml: nop, exception: nop, group: nop, groupCollapsed: nop, groupEnd: nop, timeStamp: nop, profile: nop, profileEnd: nop });
     return oldConsole;
 }
 export function hookup() {
-    hook(logs);
+    hook(factory);
 }
 if (typeof localStorage !== 'undefined') {
     try {
         const str = localStorage.getItem('debug');
         if (str && str !== '') {
-            logs.enable(str);
+            factory.enable(str);
         }
     }
     catch (e) { }
@@ -183,18 +183,18 @@ if (typeof localStorage !== 'undefined') {
 else if (typeof process !== 'undefined') {
     let val = process.env['NAMED_LOGS'];
     if (val) {
-        logs.enable(val);
+        factory.enable(val);
     }
     else {
-        logs.disable();
+        factory.disable();
     }
     val = process.env['NAMED_LOGS_LEVEL'];
     if (val) {
-        logs.level = (logLevels[val] || parseInt(val) || logs.level);
+        factory.level = (logLevels[val] || parseInt(val) || factory.level);
     }
     val = process.env['NAMED_LOGS_TRACE_LEVEL'];
     if (val) {
-        logs.traceLevel = (logLevels[val] || parseInt(val) || logs.level);
+        factory.traceLevel = (logLevels[val] || parseInt(val) || factory.level);
     }
 }
 const vars = W.location ? W.location.search.slice(1).split('&') : [];
@@ -202,25 +202,25 @@ for (const variable of vars) {
     if (variable.startsWith('debug=')) {
         const val = variable.slice(6);
         if (val === '') {
-            logs.disable();
+            factory.disable();
         }
         else {
-            logs.enable(val);
+            factory.enable(val);
         }
     }
     else if (variable.startsWith('log=')) {
         const val = variable.slice(4);
-        logs.level = (logLevels[val] || parseInt(val) || logs.level);
+        factory.level = (logLevels[val] || parseInt(val) || factory.level);
     }
     else if (variable.startsWith('trace=')) {
         const val = variable.slice(6);
-        logs.traceLevel = (logLevels[val] || parseInt(val) || logs.level);
+        factory.traceLevel = (logLevels[val] || parseInt(val) || factory.level);
     }
 }
 if (typeof window !== 'undefined') {
-    window._logFactory = logs;
+    window._logFactory = factory;
 }
 else if (typeof global !== 'undefined') {
-    global._logFactory = logs;
+    global._logFactory = factory;
 }
 //# sourceMappingURL=index.js.map

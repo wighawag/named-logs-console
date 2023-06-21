@@ -26,7 +26,7 @@ type G = Record<string, unknown> & {
 	location: Location;
 };
 
-const noop = () => undefined;
+const nop = () => undefined;
 const W: G = (typeof window !== 'undefined' ? window : globalThis) as unknown as G;
 const oldConsole = W.console;
 
@@ -34,14 +34,14 @@ const disabledRegexps: RegExp[] = [];
 const enabledRegexps: RegExp[] = [];
 
 function bindCall<T>(logFunc: (...args: T[]) => void, logger: CLogger, localTraceLevel: number, level: number) {
-	if (logger.enabled && (logger.level >= level || logs.level >= level)) {
-		if (localTraceLevel <= level || logs.traceLevel <= level) {
+	if (logger.enabled && (logger.level >= level || factory.level >= level)) {
+		if (localTraceLevel <= level || factory.traceLevel <= level) {
 			return oldConsole.trace.bind(oldConsole);
 		} else {
 			return logFunc.bind(oldConsole);
 		}
 	} else {
-		return noop;
+		return nop;
 	}
 }
 
@@ -51,7 +51,7 @@ function write(msg: string) {
 	process.stdout.write(msg);
 }
 
-const logs: {
+const factory: {
 	(namespace: string): CLogger;
 	level: number; // TODO setting should affect all logger (unless set before ?)
 	traceLevel: number; // TODO setting should affect all logger (unless set before ?)
@@ -64,8 +64,8 @@ const logs: {
 	if (logger) {
 		return logger;
 	}
-	let level = logs.level;
-	let traceLevel = logs.traceLevel;
+	let level = factory.level;
+	let traceLevel = factory.traceLevel;
 
 	return (logger = loggers[namespace] =
 		{
@@ -130,17 +130,17 @@ const logs: {
 
 const logLevels: {[name: string]: number} = {error: 1, warn: 2, info: 3, log: 4, debug: 5, trace: 6};
 
-logs.level = 2;
-logs.traceLevel = 6;
+factory.level = 2;
+factory.traceLevel = 6;
 
-logs.setTraceLevelFor = (namespaces: string, newLevel: number) => {
+factory.setTraceLevelFor = (namespaces: string, newLevel: number) => {
 	processNamespaces(namespaces || '*', {disabledRegexps: [], enabledRegexps: []}, (namespace, enabled) => {
 		if (enabled) {
 			loggers[namespace].traceLevel = newLevel;
 		}
 	});
 };
-logs.disable = () => {
+factory.disable = () => {
 	disabledRegexps.splice(0, disabledRegexps.length);
 	enabledRegexps.splice(0, enabledRegexps.length);
 	for (const namespace of Object.keys(loggers)) {
@@ -150,7 +150,7 @@ logs.disable = () => {
 		localStorage.removeItem('debug');
 	} catch (e) {}
 };
-logs.enable = (namespaces?: string) => {
+factory.enable = (namespaces?: string) => {
 	disabledRegexps.splice(0, disabledRegexps.length);
 	enabledRegexps.splice(0, enabledRegexps.length);
 	if (namespaces === '') {
@@ -224,24 +224,24 @@ if (typeof localStorage !== 'undefined') {
 	try {
 		const str = localStorage.getItem('debug');
 		if (str && str !== '') {
-			logs.enable(str);
+			factory.enable(str);
 		}
 	} catch (e) {}
 } else if (typeof process !== 'undefined') {
 	let val = process.env['NAMED_LOGS'];
 	if (val) {
-		logs.enable(val);
+		factory.enable(val);
 	} else {
-		logs.disable();
+		factory.disable();
 	}
 	val = process.env['NAMED_LOGS_LEVEL'];
 	if (val) {
-		logs.level = (logLevels[val] || parseInt(val) || logs.level) as number;
+		factory.level = (logLevels[val] || parseInt(val) || factory.level) as number;
 	}
 
 	val = process.env['NAMED_LOGS_TRACE_LEVEL'];
 	if (val) {
-		logs.traceLevel = (logLevels[val] || parseInt(val) || logs.level) as number;
+		factory.traceLevel = (logLevels[val] || parseInt(val) || factory.level) as number;
 	}
 }
 
@@ -250,17 +250,17 @@ for (const variable of vars) {
 	if (variable.startsWith('debug=')) {
 		const val = variable.slice(6);
 		if (val === '') {
-			logs.disable();
+			factory.disable();
 		} else {
-			logs.enable(val);
+			factory.enable(val);
 		}
 	} else if (variable.startsWith('log=')) {
 		const val = variable.slice(4);
-		logs.level = (logLevels[val] || parseInt(val) || logs.level) as number;
+		factory.level = (logLevels[val] || parseInt(val) || factory.level) as number;
 	} else if (variable.startsWith('trace=')) {
 		const val = variable.slice(6);
-		logs.traceLevel = (logLevels[val] || parseInt(val) || logs.level) as number;
+		factory.traceLevel = (logLevels[val] || parseInt(val) || factory.level) as number;
 	}
 }
 
-(globalThis as any)._logFactory = logs;
+(globalThis as any)._logFactory = factory;

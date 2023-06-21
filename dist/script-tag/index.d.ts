@@ -22,7 +22,7 @@ declare type G = Record<string, unknown> & {
     console: Console;
     location: Location;
 };
-declare const noop: () => undefined;
+declare const nop: () => undefined;
 declare const W: G;
 declare const oldConsole: Console;
 declare const disabledRegexps: RegExp[];
@@ -32,7 +32,7 @@ declare const loggers: {
     [namespace: string]: CLogger;
 };
 declare function write(msg: string): void;
-declare const logs: {
+declare const factory: {
     (namespace: string): CLogger;
     level: number;
     traceLevel: number;

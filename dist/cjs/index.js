@@ -1,15 +1,15 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.hookup = exports.replaceConsole = exports.logs = void 0;
+exports.hookup = exports.replaceConsole = exports.factory = void 0;
 const named_logs_1 = require("named-logs");
-const noop = () => undefined;
+const nop = () => undefined;
 const W = (typeof window !== 'undefined' ? window : globalThis);
 const oldConsole = W.console;
 const disabledRegexps = [];
 const enabledRegexps = [];
 function bindCall(logFunc, logger, localTraceLevel, level) {
-    if (logger.enabled && (logger.level >= level || exports.logs.level >= level)) {
-        if (localTraceLevel <= level || exports.logs.traceLevel <= level) {
+    if (logger.enabled && (logger.level >= level || exports.factory.level >= level)) {
+        if (localTraceLevel <= level || exports.factory.traceLevel <= level) {
             return oldConsole.trace.bind(oldConsole);
         }
         else {
@@ -17,20 +17,20 @@ function bindCall(logFunc, logger, localTraceLevel, level) {
         }
     }
     else {
-        return noop;
+        return nop;
     }
 }
 const loggers = {};
 function write(msg) {
     process.stdout.write(msg);
 }
-const logs = (namespace) => {
+const factory = (namespace) => {
     let logger = loggers[namespace];
     if (logger) {
         return logger;
     }
-    let level = exports.logs.level;
-    let traceLevel = exports.logs.traceLevel;
+    let level = exports.factory.level;
+    let traceLevel = exports.factory.traceLevel;
     return (logger = loggers[namespace] =
         {
             get assert() {
@@ -92,18 +92,18 @@ const logs = (namespace) => {
             enabled: enabled(namespace, { disabledRegexps, enabledRegexps }),
         });
 };
-exports.logs = logs;
+exports.factory = factory;
 const logLevels = { error: 1, warn: 2, info: 3, log: 4, debug: 5, trace: 6 };
-exports.logs.level = 2;
-exports.logs.traceLevel = 6;
-exports.logs.setTraceLevelFor = (namespaces, newLevel) => {
+exports.factory.level = 2;
+exports.factory.traceLevel = 6;
+exports.factory.setTraceLevelFor = (namespaces, newLevel) => {
     processNamespaces(namespaces || '*', { disabledRegexps: [], enabledRegexps: [] }, (namespace, enabled) => {
         if (enabled) {
             loggers[namespace].traceLevel = newLevel;
         }
     });
 };
-exports.logs.disable = () => {
+exports.factory.disable = () => {
     disabledRegexps.splice(0, disabledRegexps.length);
     enabledRegexps.splice(0, enabledRegexps.length);
     for (const namespace of Object.keys(loggers)) {
@@ -114,7 +114,7 @@ exports.logs.disable = () => {
     }
     catch (e) { }
 };
-exports.logs.enable = (namespaces) => {
+exports.factory.enable = (namespaces) => {
     disabledRegexps.splice(0, disabledRegexps.length);
     enabledRegexps.splice(0, enabledRegexps.length);
     if (namespaces === '') {
@@ -168,20 +168,20 @@ function processNamespaces(namespaces, { disabledRegexps, enabledRegexps }, func
     }
 }
 function replaceConsole(namespace = 'console') {
-    const logger = exports.logs(namespace);
-    W.console = Object.assign(Object.assign({}, logger), { clear: oldConsole.clear.bind(oldConsole), count: noop, countReset: noop, dirxml: noop, exception: noop, group: noop, groupCollapsed: noop, groupEnd: noop, timeStamp: noop, profile: noop, profileEnd: noop });
+    const logger = exports.factory(namespace);
+    W.console = Object.assign(Object.assign({}, logger), { clear: oldConsole.clear.bind(oldConsole), count: nop, countReset: nop, dirxml: nop, exception: nop, group: nop, groupCollapsed: nop, groupEnd: nop, timeStamp: nop, profile: nop, profileEnd: nop });
     return oldConsole;
 }
 exports.replaceConsole = replaceConsole;
 function hookup() {
-    named_logs_1.hook(exports.logs);
+    named_logs_1.hook(exports.factory);
 }
 exports.hookup = hookup;
 if (typeof localStorage !== 'undefined') {
     try {
         const str = localStorage.getItem('debug');
         if (str && str !== '') {
-            exports.logs.enable(str);
+            exports.factory.enable(str);
         }
     }
     catch (e) { }
@@ -189,18 +189,18 @@ if (typeof localStorage !== 'undefined') {
 else if (typeof process !== 'undefined') {
     let val = process.env['NAMED_LOGS'];
     if (val) {
-        exports.logs.enable(val);
+        exports.factory.enable(val);
     }
     else {
-        exports.logs.disable();
+        exports.factory.disable();
     }
     val = process.env['NAMED_LOGS_LEVEL'];
     if (val) {
-        exports.logs.level = (logLevels[val] || parseInt(val) || exports.logs.level);
+        exports.factory.level = (logLevels[val] || parseInt(val) || exports.factory.level);
     }
     val = process.env['NAMED_LOGS_TRACE_LEVEL'];
     if (val) {
-        exports.logs.traceLevel = (logLevels[val] || parseInt(val) || exports.logs.level);
+        exports.factory.traceLevel = (logLevels[val] || parseInt(val) || exports.factory.level);
     }
 }
 const vars = W.location ? W.location.search.slice(1).split('&') : [];
@@ -208,25 +208,25 @@ for (const variable of vars) {
     if (variable.startsWith('debug=')) {
         const val = variable.slice(6);
         if (val === '') {
-            exports.logs.disable();
+            exports.factory.disable();
         }
         else {
-            exports.logs.enable(val);
+            exports.factory.enable(val);
         }
     }
     else if (variable.startsWith('log=')) {
         const val = variable.slice(4);
-        exports.logs.level = (logLevels[val] || parseInt(val) || exports.logs.level);
+        exports.factory.level = (logLevels[val] || parseInt(val) || exports.factory.level);
     }
     else if (variable.startsWith('trace=')) {
         const val = variable.slice(6);
-        exports.logs.traceLevel = (logLevels[val] || parseInt(val) || exports.logs.level);
+        exports.factory.traceLevel = (logLevels[val] || parseInt(val) || exports.factory.level);
     }
 }
 if (typeof window !== 'undefined') {
-    window._logFactory = exports.logs;
+    window._logFactory = exports.factory;
 }
 else if (typeof global !== 'undefined') {
-    global._logFactory = exports.logs;
+    global._logFactory = exports.factory;
 }
 //# sourceMappingURL=index.js.map

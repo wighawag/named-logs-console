@@ -4,7 +4,7 @@ export declare type CLogger = Logger & {
     traceLevel: number;
     enabled: boolean;
 };
-export declare const logs: {
+export declare const factory: {
     (namespace: string): CLogger;
     level: number;
     traceLevel: number;
