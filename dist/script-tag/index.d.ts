@@ -1,4 +1,4 @@
-declare type Logger = {
+type Logger = {
     readonly assert: (condition?: boolean, ...data: any[]) => void;
     readonly error: (...data: any[]) => void;
     readonly warn: (...data: any[]) => void;
@@ -13,12 +13,12 @@ declare type Logger = {
     readonly trace: (...data: any[]) => void;
     readonly write: (msg: string) => void;
 };
-declare type CLogger = Logger & {
+type CLogger = Logger & {
     level: number;
     traceLevel: number;
     enabled: boolean;
 };
-declare type G = Record<string, unknown> & {
+type G = Record<string, unknown> & {
     console: Console;
     location: Location;
 };

@@ -168,13 +168,13 @@ function processNamespaces(namespaces, { disabledRegexps, enabledRegexps }, func
     }
 }
 function replaceConsole(namespace = 'console') {
-    const logger = exports.factory(namespace);
+    const logger = (0, exports.factory)(namespace);
     W.console = Object.assign(Object.assign({}, logger), { clear: oldConsole.clear.bind(oldConsole), count: nop, countReset: nop, dirxml: nop, exception: nop, group: nop, groupCollapsed: nop, groupEnd: nop, timeStamp: nop, profile: nop, profileEnd: nop });
     return oldConsole;
 }
 exports.replaceConsole = replaceConsole;
 function hookup() {
-    named_logs_1.hook(exports.factory);
+    (0, named_logs_1.hook)(exports.factory);
 }
 exports.hookup = hookup;
 if (typeof localStorage !== 'undefined') {

@@ -1,5 +1,5 @@
 import { Logger } from 'named-logs';
-export declare type CLogger = Logger & {
+export type CLogger = Logger & {
     level: number;
     traceLevel: number;
     enabled: boolean;

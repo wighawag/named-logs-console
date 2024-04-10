@@ -1,6 +1,6 @@
 {
   "name": "named-logs-console",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "console logger using named-logs facade for minimal lib overhead with full control",
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
@@ -24,15 +24,16 @@
     "named-logs": "^0.2.2"
   },
   "devDependencies": {
-    "@types/node": "^15.3.0",
+    "@types/node": "^20.12.7",
     "npm-run-all": "^4.1.5",
-    "prettier": "^2.0.5",
-    "rimraf": "^3.0.2",
-    "terser": "^5.7.0",
-    "typescript": "^4.2.4"
+    "prettier": "^3.2.5",
+    "rimraf": "^5.0.5",
+    "set-defaults": "^0.0.2",
+    "terser": "^5.30.3",
+    "typescript": "^5.4.4"
   },
   "scripts": {
-    "prepare": "node .setup.js && npm run format:fix && npm run build",
+    "prepare": "set-defaults .vscode",
     "dev": "tsc -w -p tsconfig.json",
     "build:esm": "rimraf dist/esm && tsc -p tsconfig.json",
     "build:cjs": "rimraf dist/cjs && tsc -p tsconfig-cjs.json",
