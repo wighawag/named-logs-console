@@ -14,6 +14,8 @@ type Logger = {
     readonly write: (msg: string) => void;
 };
 type CLogger = Logger & {
+    namespace: string;
+    decoration?: string;
     level: number;
     traceLevel: number;
     enabled: boolean;
@@ -27,7 +29,7 @@ declare const W: G;
 declare const oldConsole: Console;
 declare const disabledRegexps: RegExp[];
 declare const enabledRegexps: RegExp[];
-declare function bindCall<T>(logFunc: (...args: T[]) => void, logger: CLogger, localTraceLevel: number, level: number): (...args: T[]) => void;
+declare function bindCall<T>(logFunc: (...args: T[]) => void, logger: CLogger, localTraceLevel: number, level: number, allowDecoration?: boolean): (...args: T[]) => void;
 declare const loggers: {
     [namespace: string]: CLogger;
 };
@@ -36,6 +38,7 @@ declare const factory: {
     (namespace: string): CLogger;
     level: number;
     traceLevel: number;
+    labelVisible: boolean;
     setTraceLevelFor: (namespace: string, newLevel: number) => void;
     disable: () => void;
     enable: (namespaces?: string) => void;

@@ -4,13 +4,33 @@ const W = (typeof window !== 'undefined' ? window : globalThis);
 const oldConsole = W.console;
 const disabledRegexps = [];
 const enabledRegexps = [];
-function bindCall(logFunc, logger, localTraceLevel, level) {
+function bindCall(logFunc, logger, localTraceLevel, level, allowDecoration) {
     if (logger.enabled && (logger.level >= level || factory.level >= level)) {
         if (localTraceLevel >= level || factory.traceLevel >= level) {
-            return oldConsole.trace.bind(oldConsole);
+            if (factory.labelVisible) {
+                if (logger.decoration) {
+                    return oldConsole.trace.bind(oldConsole, logger.namespace, logger.decoration);
+                }
+                else {
+                    return oldConsole.trace.bind(oldConsole, logger.namespace);
+                }
+            }
+            else {
+                return oldConsole.trace.bind(oldConsole);
+            }
         }
         else {
-            return logFunc.bind(oldConsole);
+            if (allowDecoration && factory.labelVisible) {
+                if (logger.decoration) {
+                    return logFunc.bind(oldConsole, logger.namespace, logger.decoration);
+                }
+                else {
+                    return logFunc.bind(oldConsole, logger.namespace);
+                }
+            }
+            else {
+                return logFunc.bind(oldConsole);
+            }
         }
     }
     else {
@@ -21,7 +41,7 @@ const loggers = {};
 function write(msg) {
     process.stdout.write(msg);
 }
-export const factory = (namespace) => {
+export const factory = (namespace, decoration) => {
     let logger = loggers[namespace];
     if (logger) {
         return logger;
@@ -30,49 +50,51 @@ export const factory = (namespace) => {
     let traceLevel = factory.traceLevel;
     return (logger = loggers[namespace] =
         {
+            namespace,
+            decoration,
             get assert() {
-                return bindCall(oldConsole.assert, logger, traceLevel, 1);
+                return bindCall(oldConsole.assert, logger, traceLevel, 1, false);
             },
             get error() {
-                return bindCall(oldConsole.error, logger, traceLevel, 1);
+                return bindCall(oldConsole.error, logger, traceLevel, 1, true);
             },
             get warn() {
-                return bindCall(oldConsole.warn, logger, traceLevel, 2);
+                return bindCall(oldConsole.warn, logger, traceLevel, 2, true);
             },
             get info() {
-                return bindCall(oldConsole.info, logger, traceLevel, 3);
+                return bindCall(oldConsole.info, logger, traceLevel, 3, true);
             },
             get write() {
                 if (typeof process !== 'undefined') {
-                    return bindCall(write, logger, traceLevel, 3);
+                    return bindCall(write, logger, traceLevel, 3, false);
                 }
                 else {
-                    return bindCall(oldConsole.info, logger, traceLevel, 3);
+                    return bindCall(oldConsole.info, logger, traceLevel, 3, false);
                 }
             },
             get log() {
-                return bindCall(oldConsole.log, logger, traceLevel, 4);
+                return bindCall(oldConsole.log, logger, traceLevel, 4, true);
             },
             get debug() {
-                return bindCall(oldConsole.debug, logger, traceLevel, 5);
+                return bindCall(oldConsole.debug, logger, traceLevel, 5, true);
             },
             get trace() {
-                return bindCall(oldConsole.trace, logger, traceLevel, 6);
+                return bindCall(oldConsole.trace, logger, traceLevel, 6, true);
             },
             get dir() {
-                return bindCall(oldConsole.dir, logger, traceLevel, 5);
+                return bindCall(oldConsole.dir, logger, traceLevel, 5, false);
             },
             get table() {
-                return bindCall(oldConsole.table || oldConsole.debug, logger, traceLevel, 5);
+                return bindCall(oldConsole.table || oldConsole.debug, logger, traceLevel, 5, false);
             },
             get time() {
-                return bindCall(oldConsole.time || oldConsole.debug, logger, traceLevel, 5);
+                return bindCall(oldConsole.time || oldConsole.debug, logger, traceLevel, 5, false);
             },
             get timeEnd() {
-                return bindCall(oldConsole.timeEnd || oldConsole.debug, logger, traceLevel, 5);
+                return bindCall(oldConsole.timeEnd || oldConsole.debug, logger, traceLevel, 5, false);
             },
             get timeLog() {
-                return bindCall(oldConsole.timeLog || oldConsole.debug, logger, traceLevel, 5);
+                return bindCall(oldConsole.timeLog || oldConsole.debug, logger, traceLevel, 5, false);
             },
             get level() {
                 return level;
@@ -196,6 +218,10 @@ else if (typeof process !== 'undefined') {
     if (val) {
         factory.traceLevel = (logLevels[val] || parseInt(val) || factory.level);
     }
+    val = process.env['NAMED_LOGS_LABEL'];
+    if (val) {
+        factory.labelVisible = true;
+    }
 }
 const vars = W.location ? W.location.search.slice(1).split('&') : [];
 for (const variable of vars) {
@@ -215,6 +241,9 @@ for (const variable of vars) {
     else if (variable.startsWith('traceLevel=')) {
         const val = variable.slice(11);
         factory.traceLevel = (logLevels[val] || parseInt(val) || factory.level);
+    }
+    else if (variable.startsWith('debugLabel')) {
+        factory.labelVisible = true;
     }
 }
 if (typeof window !== 'undefined') {

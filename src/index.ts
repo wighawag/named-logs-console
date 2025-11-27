@@ -1,6 +1,8 @@
 import {hook, Logger} from 'named-logs';
 
 export type CLogger = Logger & {
+	namespace: string;
+	decoration?: string;
 	level: number;
 	traceLevel: number;
 	enabled: boolean;
@@ -18,12 +20,34 @@ const oldConsole = W.console;
 const disabledRegexps: RegExp[] = [];
 const enabledRegexps: RegExp[] = [];
 
-function bindCall<T>(logFunc: (...args: T[]) => void, logger: CLogger, localTraceLevel: number, level: number) {
+function bindCall<T>(
+	logFunc: (...args: T[]) => void,
+	logger: CLogger,
+	localTraceLevel: number,
+	level: number,
+	allowDecoration?: boolean,
+) {
 	if (logger.enabled && (logger.level >= level || factory.level >= level)) {
 		if (localTraceLevel >= level || factory.traceLevel >= level) {
-			return oldConsole.trace.bind(oldConsole);
+			if (factory.labelVisible) {
+				if (logger.decoration) {
+					return oldConsole.trace.bind(oldConsole, logger.namespace, logger.decoration);
+				} else {
+					return oldConsole.trace.bind(oldConsole, logger.namespace);
+				}
+			} else {
+				return oldConsole.trace.bind(oldConsole);
+			}
 		} else {
-			return logFunc.bind(oldConsole);
+			if (allowDecoration && factory.labelVisible) {
+				if (logger.decoration) {
+					return logFunc.bind(oldConsole, logger.namespace as any, logger.decoration as any);
+				} else {
+					return logFunc.bind(oldConsole, logger.namespace as any);
+				}
+			} else {
+				return logFunc.bind(oldConsole);
+			}
 		}
 	} else {
 		return noop;
@@ -40,10 +64,11 @@ export const factory: {
 	(namespace: string): CLogger;
 	level: number; // TODO setting should affect all logger (unless set before ?)
 	traceLevel: number; // TODO setting should affect all logger (unless set before ?)
+	labelVisible: boolean;
 	setTraceLevelFor: (namespace: string, newLevel: number) => void;
 	disable: () => void;
 	enable: (namespaces?: string) => void;
-} = (namespace: string): CLogger => {
+} = (namespace: string, decoration?: string): CLogger => {
 	let logger = loggers[namespace];
 
 	if (logger) {
@@ -54,48 +79,50 @@ export const factory: {
 
 	return (logger = loggers[namespace] =
 		{
+			namespace,
+			decoration,
 			get assert() {
-				return bindCall(oldConsole.assert, logger, traceLevel, 1);
+				return bindCall(oldConsole.assert, logger, traceLevel, 1, false);
 			},
 			get error() {
-				return bindCall(oldConsole.error, logger, traceLevel, 1);
+				return bindCall(oldConsole.error, logger, traceLevel, 1, true);
 			},
 			get warn() {
-				return bindCall(oldConsole.warn, logger, traceLevel, 2);
+				return bindCall(oldConsole.warn, logger, traceLevel, 2, true);
 			},
 			get info() {
-				return bindCall(oldConsole.info, logger, traceLevel, 3);
+				return bindCall(oldConsole.info, logger, traceLevel, 3, true);
 			},
 			get write() {
 				if (typeof process !== 'undefined') {
-					return bindCall(write, logger, traceLevel, 3);
+					return bindCall(write, logger, traceLevel, 3, false);
 				} else {
-					return bindCall(oldConsole.info, logger, traceLevel, 3);
+					return bindCall(oldConsole.info, logger, traceLevel, 3, false);
 				}
 			},
 			get log() {
-				return bindCall(oldConsole.log, logger, traceLevel, 4);
+				return bindCall(oldConsole.log, logger, traceLevel, 4, true);
 			},
 			get debug() {
-				return bindCall(oldConsole.debug, logger, traceLevel, 5);
+				return bindCall(oldConsole.debug, logger, traceLevel, 5, true);
 			},
 			get trace() {
-				return bindCall(oldConsole.trace, logger, traceLevel, 6);
+				return bindCall(oldConsole.trace, logger, traceLevel, 6, true);
 			},
 			get dir() {
-				return bindCall(oldConsole.dir, logger, traceLevel, 5);
+				return bindCall(oldConsole.dir, logger, traceLevel, 5, false);
 			},
 			get table() {
-				return bindCall(oldConsole.table || oldConsole.debug, logger, traceLevel, 5);
+				return bindCall(oldConsole.table || oldConsole.debug, logger, traceLevel, 5, false);
 			},
 			get time() {
-				return bindCall(oldConsole.time || oldConsole.debug, logger, traceLevel, 5);
+				return bindCall(oldConsole.time || oldConsole.debug, logger, traceLevel, 5, false);
 			},
 			get timeEnd() {
-				return bindCall(oldConsole.timeEnd || oldConsole.debug, logger, traceLevel, 5);
+				return bindCall(oldConsole.timeEnd || oldConsole.debug, logger, traceLevel, 5, false);
 			},
 			get timeLog() {
-				return bindCall(oldConsole.timeLog || oldConsole.debug, logger, traceLevel, 5);
+				return bindCall(oldConsole.timeLog || oldConsole.debug, logger, traceLevel, 5, false);
 			},
 			get level() {
 				return level;
@@ -254,6 +281,11 @@ if (typeof localStorage !== 'undefined') {
 	if (val) {
 		factory.traceLevel = (logLevels[val] || parseInt(val) || factory.level) as number;
 	}
+
+	val = process.env['NAMED_LOGS_LABEL'];
+	if (val) {
+		factory.labelVisible = true;
+	}
 }
 
 const vars = W.location ? W.location.search.slice(1).split('&') : [];
@@ -271,6 +303,8 @@ for (const variable of vars) {
 	} else if (variable.startsWith('traceLevel=')) {
 		const val = variable.slice(11);
 		factory.traceLevel = (logLevels[val] || parseInt(val) || factory.level) as number;
+	} else if (variable.startsWith('debugLabel')) {
+		factory.labelVisible = true;
 	}
 }
 
