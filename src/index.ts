@@ -31,7 +31,7 @@ function bindCall<T>(
 		if (localTraceLevel >= level || factory.traceLevel >= level) {
 			if (factory.labelVisible) {
 				if (logger.decoration) {
-					return oldConsole.trace.bind(oldConsole, logger.namespace, logger.decoration);
+					return oldConsole.trace.bind(oldConsole, `%c${logger.namespace}`, logger.decoration);
 				} else {
 					return oldConsole.trace.bind(oldConsole, logger.namespace);
 				}
@@ -41,7 +41,7 @@ function bindCall<T>(
 		} else {
 			if (allowDecoration && factory.labelVisible) {
 				if (logger.decoration) {
-					return logFunc.bind(oldConsole, logger.namespace as any, logger.decoration as any);
+					return logFunc.bind(oldConsole, `%c${logger.namespace}` as any, logger.decoration as any);
 				} else {
 					return logFunc.bind(oldConsole, logger.namespace as any);
 				}
@@ -61,14 +61,14 @@ function write(msg: string) {
 }
 
 export const factory: {
-	(namespace: string): CLogger;
+	(namespace: string, options?: {decoration?: string}): CLogger;
 	level: number; // TODO setting should affect all logger (unless set before ?)
 	traceLevel: number; // TODO setting should affect all logger (unless set before ?)
 	labelVisible: boolean;
 	setTraceLevelFor: (namespace: string, newLevel: number) => void;
 	disable: () => void;
 	enable: (namespaces?: string) => void;
-} = (namespace: string, decoration?: string): CLogger => {
+} = (namespace: string, options?: {decoration?: string}): CLogger => {
 	let logger = loggers[namespace];
 
 	if (logger) {
@@ -80,7 +80,7 @@ export const factory: {
 	return (logger = loggers[namespace] =
 		{
 			namespace,
-			decoration,
+			decoration: options?.decoration,
 			get assert() {
 				return bindCall(oldConsole.assert, logger, traceLevel, 1, false);
 			},
@@ -255,7 +255,7 @@ export function replaceConsole(namespace = 'console'): Console {
 }
 
 export function hookup(): void {
-	hook(factory);
+	hook(factory as any); // TODO type fix
 }
 
 if (typeof localStorage !== 'undefined') {

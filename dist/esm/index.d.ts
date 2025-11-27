@@ -7,7 +7,9 @@ export type CLogger = Logger & {
     enabled: boolean;
 };
 export declare const factory: {
-    (namespace: string): CLogger;
+    (namespace: string, options?: {
+        decoration?: string;
+    }): CLogger;
     level: number;
     traceLevel: number;
     labelVisible: boolean;

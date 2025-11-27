@@ -14,7 +14,7 @@ function bindCall(logFunc, logger, localTraceLevel, level, allowDecoration) {
         if (localTraceLevel >= level || exports.factory.traceLevel >= level) {
             if (exports.factory.labelVisible) {
                 if (logger.decoration) {
-                    return oldConsole.trace.bind(oldConsole, logger.namespace, logger.decoration);
+                    return oldConsole.trace.bind(oldConsole, `%c${logger.namespace}`, logger.decoration);
                 }
                 else {
                     return oldConsole.trace.bind(oldConsole, logger.namespace);
@@ -27,7 +27,7 @@ function bindCall(logFunc, logger, localTraceLevel, level, allowDecoration) {
         else {
             if (allowDecoration && exports.factory.labelVisible) {
                 if (logger.decoration) {
-                    return logFunc.bind(oldConsole, logger.namespace, logger.decoration);
+                    return logFunc.bind(oldConsole, `%c${logger.namespace}`, logger.decoration);
                 }
                 else {
                     return logFunc.bind(oldConsole, logger.namespace);
@@ -46,7 +46,7 @@ const loggers = {};
 function write(msg) {
     process.stdout.write(msg);
 }
-const factory = (namespace, decoration) => {
+const factory = (namespace, options) => {
     let logger = loggers[namespace];
     if (logger) {
         return logger;
@@ -56,7 +56,7 @@ const factory = (namespace, decoration) => {
     return (logger = loggers[namespace] =
         {
             namespace,
-            decoration,
+            decoration: options === null || options === void 0 ? void 0 : options.decoration,
             get assert() {
                 return bindCall(oldConsole.assert, logger, traceLevel, 1, false);
             },
@@ -197,7 +197,7 @@ function replaceConsole(namespace = 'console') {
     return oldConsole;
 }
 function hookup() {
-    (0, named_logs_1.hook)(exports.factory);
+    (0, named_logs_1.hook)(exports.factory); // TODO type fix
 }
 if (typeof localStorage !== 'undefined') {
     try {

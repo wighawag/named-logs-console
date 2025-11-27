@@ -9,7 +9,7 @@ function bindCall(logFunc, logger, localTraceLevel, level, allowDecoration) {
         if (localTraceLevel >= level || factory.traceLevel >= level) {
             if (factory.labelVisible) {
                 if (logger.decoration) {
-                    return oldConsole.trace.bind(oldConsole, logger.namespace, logger.decoration);
+                    return oldConsole.trace.bind(oldConsole, `%c${logger.namespace}`, logger.decoration);
                 }
                 else {
                     return oldConsole.trace.bind(oldConsole, logger.namespace);
@@ -22,7 +22,7 @@ function bindCall(logFunc, logger, localTraceLevel, level, allowDecoration) {
         else {
             if (allowDecoration && factory.labelVisible) {
                 if (logger.decoration) {
-                    return logFunc.bind(oldConsole, logger.namespace, logger.decoration);
+                    return logFunc.bind(oldConsole, `%c${logger.namespace}`, logger.decoration);
                 }
                 else {
                     return logFunc.bind(oldConsole, logger.namespace);
@@ -41,7 +41,7 @@ const loggers = {};
 function write(msg) {
     process.stdout.write(msg);
 }
-export const factory = (namespace, decoration) => {
+export const factory = (namespace, options) => {
     let logger = loggers[namespace];
     if (logger) {
         return logger;
@@ -51,7 +51,7 @@ export const factory = (namespace, decoration) => {
     return (logger = loggers[namespace] =
         {
             namespace,
-            decoration,
+            decoration: options === null || options === void 0 ? void 0 : options.decoration,
             get assert() {
                 return bindCall(oldConsole.assert, logger, traceLevel, 1, false);
             },
@@ -191,7 +191,7 @@ export function replaceConsole(namespace = 'console') {
     return oldConsole;
 }
 export function hookup() {
-    hook(factory);
+    hook(factory); // TODO type fix
 }
 if (typeof localStorage !== 'undefined') {
     try {

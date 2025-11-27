@@ -35,7 +35,9 @@ declare const loggers: {
 };
 declare function write(msg: string): void;
 declare const factory: {
-    (namespace: string): CLogger;
+    (namespace: string, options?: {
+        decoration?: string;
+    }): CLogger;
     level: number;
     traceLevel: number;
     labelVisible: boolean;
