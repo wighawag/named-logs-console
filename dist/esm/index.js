@@ -8,11 +8,12 @@ function bindCall(logFunc, logger, localTraceLevel, level, allowDecoration) {
     if (logger.enabled && (logger.level >= level || factory.level >= level)) {
         if (localTraceLevel >= level || factory.traceLevel >= level) {
             if (factory.labelVisible) {
+                const label = typeof factory.labelVisible === 'string' ? `${factory.labelVisible}${logger.namespace}` : logger.namespace;
                 if (logger.decoration) {
-                    return oldConsole.trace.bind(oldConsole, `%c${logger.namespace}`, logger.decoration);
+                    return oldConsole.trace.bind(oldConsole, `%c${label}`, logger.decoration);
                 }
                 else {
-                    return oldConsole.trace.bind(oldConsole, logger.namespace);
+                    return oldConsole.trace.bind(oldConsole, label);
                 }
             }
             else {
@@ -21,11 +22,12 @@ function bindCall(logFunc, logger, localTraceLevel, level, allowDecoration) {
         }
         else {
             if (allowDecoration && factory.labelVisible) {
+                const label = typeof factory.labelVisible === 'string' ? `${factory.labelVisible}${logger.namespace}` : logger.namespace;
                 if (logger.decoration) {
-                    return logFunc.bind(oldConsole, `%c${logger.namespace}`, logger.decoration);
+                    return logFunc.bind(oldConsole, `%c${label}`, logger.decoration);
                 }
                 else {
-                    return logFunc.bind(oldConsole, logger.namespace);
+                    return logFunc.bind(oldConsole, label);
                 }
             }
             else {
@@ -243,7 +245,13 @@ for (const variable of vars) {
         factory.traceLevel = (logLevels[val] || parseInt(val) || factory.level);
     }
     else if (variable.startsWith('debugLabel')) {
-        factory.labelVisible = true;
+        const val = variable.slice(11);
+        if (val) {
+            factory.labelVisible = val;
+        }
+        else {
+            factory.labelVisible = true;
+        }
     }
 }
 if (typeof window !== 'undefined') {

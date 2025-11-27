@@ -40,7 +40,7 @@ declare const factory: {
     }): CLogger;
     level: number;
     traceLevel: number;
-    labelVisible: boolean;
+    labelVisible: boolean | string;
     setTraceLevelFor: (namespace: string, newLevel: number) => void;
     disable: () => void;
     enable: (namespaces?: string) => void;

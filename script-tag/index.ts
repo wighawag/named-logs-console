@@ -45,20 +45,24 @@ function bindCall<T>(
 	if (logger.enabled && (logger.level >= level || factory.level >= level)) {
 		if (localTraceLevel >= level || factory.traceLevel >= level) {
 			if (factory.labelVisible) {
+				const label =
+					typeof factory.labelVisible === 'string' ? `${factory.labelVisible}${logger.namespace}` : logger.namespace;
 				if (logger.decoration) {
-					return oldConsole.trace.bind(oldConsole, `%c${logger.namespace}`, logger.decoration);
+					return oldConsole.trace.bind(oldConsole, `%c${label}`, logger.decoration);
 				} else {
-					return oldConsole.trace.bind(oldConsole, logger.namespace);
+					return oldConsole.trace.bind(oldConsole, label);
 				}
 			} else {
 				return oldConsole.trace.bind(oldConsole);
 			}
 		} else {
 			if (allowDecoration && factory.labelVisible) {
+				const label =
+					typeof factory.labelVisible === 'string' ? `${factory.labelVisible}${logger.namespace}` : logger.namespace;
 				if (logger.decoration) {
-					return logFunc.bind(oldConsole, `%c${logger.namespace}` as any, logger.decoration as any);
+					return logFunc.bind(oldConsole, `%c${label}` as any, logger.decoration as any);
 				} else {
-					return logFunc.bind(oldConsole, logger.namespace as any);
+					return logFunc.bind(oldConsole, label as any);
 				}
 			} else {
 				return logFunc.bind(oldConsole);
@@ -79,7 +83,7 @@ const factory: {
 	(namespace: string, options?: {decoration?: string}): CLogger;
 	level: number; // TODO setting should affect all logger (unless set before ?)
 	traceLevel: number; // TODO setting should affect all logger (unless set before ?)
-	labelVisible: boolean;
+	labelVisible: boolean | string;
 	setTraceLevelFor: (namespace: string, newLevel: number) => void;
 	disable: () => void;
 	enable: (namespaces?: string) => void;
@@ -293,7 +297,12 @@ for (const variable of vars) {
 		const val = variable.slice(11);
 		factory.traceLevel = (logLevels[val] || parseInt(val) || factory.level) as number;
 	} else if (variable.startsWith('debugLabel')) {
-		factory.labelVisible = true;
+		const val = variable.slice(11);
+		if (val) {
+			factory.labelVisible = val;
+		} else {
+			factory.labelVisible = true;
+		}
 	}
 }
 

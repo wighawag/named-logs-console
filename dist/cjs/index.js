@@ -13,11 +13,12 @@ function bindCall(logFunc, logger, localTraceLevel, level, allowDecoration) {
     if (logger.enabled && (logger.level >= level || exports.factory.level >= level)) {
         if (localTraceLevel >= level || exports.factory.traceLevel >= level) {
             if (exports.factory.labelVisible) {
+                const label = typeof exports.factory.labelVisible === 'string' ? `${exports.factory.labelVisible}${logger.namespace}` : logger.namespace;
                 if (logger.decoration) {
-                    return oldConsole.trace.bind(oldConsole, `%c${logger.namespace}`, logger.decoration);
+                    return oldConsole.trace.bind(oldConsole, `%c${label}`, logger.decoration);
                 }
                 else {
-                    return oldConsole.trace.bind(oldConsole, logger.namespace);
+                    return oldConsole.trace.bind(oldConsole, label);
                 }
             }
             else {
@@ -26,11 +27,12 @@ function bindCall(logFunc, logger, localTraceLevel, level, allowDecoration) {
         }
         else {
             if (allowDecoration && exports.factory.labelVisible) {
+                const label = typeof exports.factory.labelVisible === 'string' ? `${exports.factory.labelVisible}${logger.namespace}` : logger.namespace;
                 if (logger.decoration) {
-                    return logFunc.bind(oldConsole, `%c${logger.namespace}`, logger.decoration);
+                    return logFunc.bind(oldConsole, `%c${label}`, logger.decoration);
                 }
                 else {
-                    return logFunc.bind(oldConsole, logger.namespace);
+                    return logFunc.bind(oldConsole, label);
                 }
             }
             else {
@@ -249,7 +251,13 @@ for (const variable of vars) {
         exports.factory.traceLevel = (logLevels[val] || parseInt(val) || exports.factory.level);
     }
     else if (variable.startsWith('debugLabel')) {
-        exports.factory.labelVisible = true;
+        const val = variable.slice(11);
+        if (val) {
+            exports.factory.labelVisible = val;
+        }
+        else {
+            exports.factory.labelVisible = true;
+        }
     }
 }
 if (typeof window !== 'undefined') {
