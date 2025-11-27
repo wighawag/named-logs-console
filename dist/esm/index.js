@@ -113,7 +113,7 @@ export const factory = (namespace, decoration) => {
 };
 const logLevels = { error: 1, warn: 2, info: 3, log: 4, debug: 5, trace: 6 };
 factory.level = 2;
-factory.traceLevel = 6;
+factory.traceLevel = 0;
 factory.setTraceLevelFor = (namespaces, newLevel) => {
     processNamespaces(namespaces || '*', { disabledRegexps: [], enabledRegexps: [] }, (namespace, enabled) => {
         if (enabled) {
