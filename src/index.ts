@@ -11,7 +11,7 @@ type G = Record<string, unknown> & {
 	location: Location;
 };
 
-const nop = () => undefined;
+const noop = () => undefined;
 const W: G = (typeof window !== 'undefined' ? window : globalThis) as unknown as G;
 const oldConsole = W.console;
 
@@ -26,7 +26,7 @@ function bindCall<T>(logFunc: (...args: T[]) => void, logger: CLogger, localTrac
 			return logFunc.bind(oldConsole);
 		}
 	} else {
-		return nop;
+		return noop;
 	}
 }
 
@@ -210,16 +210,16 @@ export function replaceConsole(namespace = 'console'): Console {
 	W.console = {
 		...logger,
 		clear: oldConsole.clear.bind(oldConsole),
-		count: nop,
-		countReset: nop,
-		dirxml: nop, // TODO ?
-		exception: nop,
-		group: nop,
-		groupCollapsed: nop,
-		groupEnd: nop,
-		timeStamp: nop,
-		profile: nop,
-		profileEnd: nop,
+		count: noop,
+		countReset: noop,
+		dirxml: noop, // TODO ?
+		exception: noop,
+		group: noop,
+		groupCollapsed: noop,
+		groupEnd: noop,
+		timeStamp: noop,
+		profile: noop,
+		profileEnd: noop,
 		// timeStamp: oldConsole.timeStamp.bind(oldConsole),
 		// profile: (oldConsole as any).profile.bind(oldConsole),
 		// profileEnd: (oldConsole as any).profileEnd.bind(oldConsole),

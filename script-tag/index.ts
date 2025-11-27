@@ -26,7 +26,7 @@ type G = Record<string, unknown> & {
 	location: Location;
 };
 
-const nop = () => undefined;
+const noop = () => undefined;
 const W: G = (typeof window !== 'undefined' ? window : globalThis) as unknown as G;
 const oldConsole = W.console;
 
@@ -41,7 +41,7 @@ function bindCall<T>(logFunc: (...args: T[]) => void, logger: CLogger, localTrac
 			return logFunc.bind(oldConsole);
 		}
 	} else {
-		return nop;
+		return noop;
 	}
 }
 

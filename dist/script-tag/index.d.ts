@@ -22,7 +22,7 @@ type G = Record<string, unknown> & {
     console: Console;
     location: Location;
 };
-declare const nop: () => undefined;
+declare const noop: () => undefined;
 declare const W: G;
 declare const oldConsole: Console;
 declare const disabledRegexps: RegExp[];

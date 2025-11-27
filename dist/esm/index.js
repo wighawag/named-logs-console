@@ -1,5 +1,5 @@
 import { hook } from 'named-logs';
-const nop = () => undefined;
+const noop = () => undefined;
 const W = (typeof window !== 'undefined' ? window : globalThis);
 const oldConsole = W.console;
 const disabledRegexps = [];
@@ -14,7 +14,7 @@ function bindCall(logFunc, logger, localTraceLevel, level) {
         }
     }
     else {
-        return nop;
+        return noop;
     }
 }
 const loggers = {};
@@ -165,7 +165,7 @@ function processNamespaces(namespaces, { disabledRegexps, enabledRegexps }, func
 }
 export function replaceConsole(namespace = 'console') {
     const logger = factory(namespace);
-    W.console = Object.assign(Object.assign({}, logger), { clear: oldConsole.clear.bind(oldConsole), count: nop, countReset: nop, dirxml: nop, exception: nop, group: nop, groupCollapsed: nop, groupEnd: nop, timeStamp: nop, profile: nop, profileEnd: nop });
+    W.console = Object.assign(Object.assign({}, logger), { clear: oldConsole.clear.bind(oldConsole), count: noop, countReset: noop, dirxml: noop, exception: noop, group: noop, groupCollapsed: noop, groupEnd: noop, timeStamp: noop, profile: noop, profileEnd: noop });
     return oldConsole;
 }
 export function hookup() {
