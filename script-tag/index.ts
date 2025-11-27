@@ -35,7 +35,7 @@ const enabledRegexps: RegExp[] = [];
 
 function bindCall<T>(logFunc: (...args: T[]) => void, logger: CLogger, localTraceLevel: number, level: number) {
 	if (logger.enabled && (logger.level >= level || factory.level >= level)) {
-		if (localTraceLevel <= level || factory.traceLevel <= level) {
+		if (localTraceLevel >= level || factory.traceLevel >= level) {
 			return oldConsole.trace.bind(oldConsole);
 		} else {
 			return logFunc.bind(oldConsole);

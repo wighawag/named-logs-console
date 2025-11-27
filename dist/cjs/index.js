@@ -11,7 +11,7 @@ const disabledRegexps = [];
 const enabledRegexps = [];
 function bindCall(logFunc, logger, localTraceLevel, level) {
     if (logger.enabled && (logger.level >= level || exports.factory.level >= level)) {
-        if (localTraceLevel <= level || exports.factory.traceLevel <= level) {
+        if (localTraceLevel >= level || exports.factory.traceLevel >= level) {
             return oldConsole.trace.bind(oldConsole);
         }
         else {
