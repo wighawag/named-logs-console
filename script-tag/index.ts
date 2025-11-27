@@ -161,7 +161,7 @@ factory.enable = (namespaces?: string) => {
 	processNamespaces(
 		namespaces,
 		{disabledRegexps, enabledRegexps},
-		(namespace, enabled) => (loggers[namespace].enabled = enabled)
+		(namespace, enabled) => (loggers[namespace].enabled = enabled),
 	);
 	try {
 		localStorage.setItem('debug', namespaces);
@@ -170,7 +170,7 @@ factory.enable = (namespaces?: string) => {
 
 function enabled(
 	name: string,
-	{disabledRegexps, enabledRegexps}: {disabledRegexps: RegExp[]; enabledRegexps: RegExp[]}
+	{disabledRegexps, enabledRegexps}: {disabledRegexps: RegExp[]; enabledRegexps: RegExp[]},
 ): boolean {
 	if (name[name.length - 1] === '*') {
 		return true;
@@ -195,7 +195,7 @@ function enabled(
 function processNamespaces(
 	namespaces: string,
 	{disabledRegexps, enabledRegexps}: {disabledRegexps: RegExp[]; enabledRegexps: RegExp[]},
-	func: (namespace: string, enabled: boolean) => void
+	func: (namespace: string, enabled: boolean) => void,
 ) {
 	const split = (typeof namespaces === 'string' ? namespaces : '').split(/[\s,]+/);
 	const len = split.length;
@@ -254,11 +254,11 @@ for (const variable of vars) {
 		} else {
 			factory.enable(val);
 		}
-	} else if (variable.startsWith('log=')) {
-		const val = variable.slice(4);
+	} else if (variable.startsWith('debugLevel=')) {
+		const val = variable.slice(11);
 		factory.level = (logLevels[val] || parseInt(val) || factory.level) as number;
-	} else if (variable.startsWith('trace=')) {
-		const val = variable.slice(6);
+	} else if (variable.startsWith('traceLevel=')) {
+		const val = variable.slice(11);
 		factory.traceLevel = (logLevels[val] || parseInt(val) || factory.level) as number;
 	}
 }

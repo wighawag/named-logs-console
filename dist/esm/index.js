@@ -208,12 +208,12 @@ for (const variable of vars) {
             factory.enable(val);
         }
     }
-    else if (variable.startsWith('log=')) {
-        const val = variable.slice(4);
+    else if (variable.startsWith('debugLevel=')) {
+        const val = variable.slice(11);
         factory.level = (logLevels[val] || parseInt(val) || factory.level);
     }
-    else if (variable.startsWith('trace=')) {
-        const val = variable.slice(6);
+    else if (variable.startsWith('traceLevel=')) {
+        const val = variable.slice(11);
         factory.traceLevel = (logLevels[val] || parseInt(val) || factory.level);
     }
 }

@@ -1,6 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.hookup = exports.replaceConsole = exports.factory = void 0;
+exports.factory = void 0;
+exports.replaceConsole = replaceConsole;
+exports.hookup = hookup;
 const named_logs_1 = require("named-logs");
 const nop = () => undefined;
 const W = (typeof window !== 'undefined' ? window : globalThis);
@@ -172,11 +174,9 @@ function replaceConsole(namespace = 'console') {
     W.console = Object.assign(Object.assign({}, logger), { clear: oldConsole.clear.bind(oldConsole), count: nop, countReset: nop, dirxml: nop, exception: nop, group: nop, groupCollapsed: nop, groupEnd: nop, timeStamp: nop, profile: nop, profileEnd: nop });
     return oldConsole;
 }
-exports.replaceConsole = replaceConsole;
 function hookup() {
     (0, named_logs_1.hook)(exports.factory);
 }
-exports.hookup = hookup;
 if (typeof localStorage !== 'undefined') {
     try {
         const str = localStorage.getItem('debug');
@@ -214,12 +214,12 @@ for (const variable of vars) {
             exports.factory.enable(val);
         }
     }
-    else if (variable.startsWith('log=')) {
-        const val = variable.slice(4);
+    else if (variable.startsWith('debugLevel=')) {
+        const val = variable.slice(11);
         exports.factory.level = (logLevels[val] || parseInt(val) || exports.factory.level);
     }
-    else if (variable.startsWith('trace=')) {
-        const val = variable.slice(6);
+    else if (variable.startsWith('traceLevel=')) {
+        const val = variable.slice(11);
         exports.factory.traceLevel = (logLevels[val] || parseInt(val) || exports.factory.level);
     }
 }
