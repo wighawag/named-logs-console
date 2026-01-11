@@ -53,6 +53,7 @@ function bindCall<T>(logFunc: (...args: T[]) => void, logger: CLogger, level: nu
 }
 
 type LoggerValues = {
+	enabled?: boolean | undefined;
 	level?: number | undefined;
 	traceLevel?: number | undefined;
 };
@@ -337,13 +338,19 @@ function assignValues(logger: CLogger, values: LoggerValues) {
 	if ('traceLevel' in values) {
 		logger.traceLevel = values.traceLevel;
 	}
+	if ('enabled' in values) {
+		logger.enabled = values.enabled || false;
+	}
 }
 
-export function setupLogger(namespace: string, values: LoggerValues) {
-	const logger = _loggers[namespace];
-	if (logger) {
-		assignValues(logger, values);
-	} else {
-		assignedValues[namespace] = {...values};
+export function setupLogger(namespace: string | string[], values: LoggerValues) {
+	const namespaces = typeof namespace === 'string' ? [namespace] : namespace;
+	for (const namespace of namespaces) {
+		const logger = _loggers[namespace];
+		if (logger) {
+			assignValues(logger, values);
+		} else {
+			assignedValues[namespace] = {...values};
+		}
 	}
 }

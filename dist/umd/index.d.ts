@@ -7,6 +7,7 @@ export type CLogger = Logger & {
     enabled: boolean;
 };
 type LoggerValues = {
+    enabled?: boolean | undefined;
     level?: number | undefined;
     traceLevel?: number | undefined;
 };
@@ -23,6 +24,6 @@ export declare const factory: {
 };
 export declare function replaceConsole(namespace?: string): Console;
 export declare function hookup(): void;
-export declare function setupLogger(namespace: string, values: LoggerValues): void;
+export declare function setupLogger(namespace: string | string[], values: LoggerValues): void;
 export {};
 //# sourceMappingURL=index.d.ts.map

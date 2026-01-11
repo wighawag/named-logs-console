@@ -273,14 +273,20 @@ function assignValues(logger, values) {
     if ('traceLevel' in values) {
         logger.traceLevel = values.traceLevel;
     }
+    if ('enabled' in values) {
+        logger.enabled = values.enabled || false;
+    }
 }
 export function setupLogger(namespace, values) {
-    const logger = _loggers[namespace];
-    if (logger) {
-        assignValues(logger, values);
-    }
-    else {
-        assignedValues[namespace] = Object.assign({}, values);
+    const namespaces = typeof namespace === 'string' ? [namespace] : namespace;
+    for (const namespace of namespaces) {
+        const logger = _loggers[namespace];
+        if (logger) {
+            assignValues(logger, values);
+        }
+        else {
+            assignedValues[namespace] = Object.assign({}, values);
+        }
     }
 }
 //# sourceMappingURL=index.js.map
