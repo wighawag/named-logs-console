@@ -3,8 +3,8 @@ import {hook, Logger} from 'named-logs';
 export type CLogger = Logger & {
 	namespace: string;
 	decoration?: string;
-	level: number;
-	traceLevel: number;
+	level: number | undefined;
+	traceLevel: number | undefined;
 	enabled: boolean;
 };
 
@@ -20,15 +20,9 @@ const oldConsole = W.console;
 const disabledRegexps: RegExp[] = [];
 const enabledRegexps: RegExp[] = [];
 
-function bindCall<T>(
-	logFunc: (...args: T[]) => void,
-	logger: CLogger,
-	localTraceLevel: number,
-	level: number,
-	allowDecoration?: boolean,
-) {
-	if (logger.enabled && (logger.level >= level || factory.level >= level)) {
-		if (localTraceLevel >= level || factory.traceLevel >= level) {
+function bindCall<T>(logFunc: (...args: T[]) => void, logger: CLogger, level: number, allowDecoration?: boolean) {
+	if (logger.enabled && (logger.level !== undefined ? logger.level >= level : factory.level >= level)) {
+		if (logger.traceLevel !== undefined ? logger.traceLevel >= level : factory.traceLevel >= level) {
 			if (factory.labelVisible) {
 				const label =
 					typeof factory.labelVisible === 'string' ? `${factory.labelVisible}${logger.namespace}` : logger.namespace;
@@ -58,7 +52,13 @@ function bindCall<T>(
 	}
 }
 
-const loggers: {[namespace: string]: CLogger} = {};
+type LoggerValues = {
+	level?: number | undefined;
+	traceLevel?: number | undefined;
+};
+
+const assignedValues: {[namespace: string]: LoggerValues} = {};
+const _loggers: {[namespace: string]: CLogger} = {};
 
 function write(msg: string) {
 	process.stdout.write(msg);
@@ -73,78 +73,85 @@ export const factory: {
 	disable: () => void;
 	enable: (namespaces?: string) => void;
 } = (namespace: string, options?: {decoration?: string}): CLogger => {
-	let logger = loggers[namespace];
+	let logger = _loggers[namespace];
 
 	if (logger) {
 		return logger;
 	}
-	let level = factory.level;
-	let traceLevel = factory.traceLevel;
+	let namespaceLevel: number | undefined = undefined;
+	let namespaceTraceLevel: number | undefined = undefined;
 
-	return (logger = loggers[namespace] =
-		{
-			namespace,
-			decoration: options?.decoration,
-			get assert() {
-				return bindCall(oldConsole.assert, logger, traceLevel, 1, false);
-			},
-			get error() {
-				return bindCall(oldConsole.error, logger, traceLevel, 1, true);
-			},
-			get warn() {
-				return bindCall(oldConsole.warn, logger, traceLevel, 2, true);
-			},
-			get info() {
-				return bindCall(oldConsole.info, logger, traceLevel, 3, true);
-			},
-			get write() {
-				if (typeof process !== 'undefined') {
-					return bindCall(write, logger, traceLevel, 3, false);
-				} else {
-					return bindCall(oldConsole.info, logger, traceLevel, 3, false);
-				}
-			},
-			get log() {
-				return bindCall(oldConsole.log, logger, traceLevel, 4, true);
-			},
-			get debug() {
-				return bindCall(oldConsole.debug, logger, traceLevel, 5, true);
-			},
-			get trace() {
-				return bindCall(oldConsole.trace, logger, traceLevel, 6, true);
-			},
-			get dir() {
-				return bindCall(oldConsole.dir, logger, traceLevel, 5, false);
-			},
-			get table() {
-				return bindCall(oldConsole.table || oldConsole.debug, logger, traceLevel, 5, false);
-			},
-			get time() {
-				return bindCall(oldConsole.time || oldConsole.debug, logger, traceLevel, 5, false);
-			},
-			get timeEnd() {
-				return bindCall(oldConsole.timeEnd || oldConsole.debug, logger, traceLevel, 5, false);
-			},
-			get timeLog() {
-				return bindCall(oldConsole.timeLog || oldConsole.debug, logger, traceLevel, 5, false);
-			},
-			get level() {
-				return level;
-			},
-			set level(newLevel: number) {
-				level = newLevel;
-			},
-			get traceLevel() {
-				return traceLevel;
-			},
-			set traceLevel(newLevel: number) {
-				traceLevel = newLevel;
-			},
-			enabled: enabled(namespace, {disabledRegexps, enabledRegexps}),
-		});
+	logger = _loggers[namespace] = {
+		namespace,
+		decoration: options?.decoration,
+		get assert() {
+			return bindCall(oldConsole.assert, logger, 1, false);
+		},
+		get error() {
+			return bindCall(oldConsole.error, logger, 1, true);
+		},
+		get warn() {
+			return bindCall(oldConsole.warn, logger, 2, true);
+		},
+		get info() {
+			return bindCall(oldConsole.info, logger, 3, true);
+		},
+		get write() {
+			if (typeof process !== 'undefined') {
+				return bindCall(write, logger, 3, false);
+			} else {
+				return bindCall(oldConsole.info, logger, 3, false);
+			}
+		},
+		get log() {
+			return bindCall(oldConsole.log, logger, 3, true);
+		},
+		get debug() {
+			return bindCall(oldConsole.debug, logger, 4, true);
+		},
+		get trace() {
+			return bindCall(oldConsole.trace, logger, 5, true);
+		},
+		get dir() {
+			return bindCall(oldConsole.dir, logger, 4, false);
+		},
+		get table() {
+			return bindCall(oldConsole.table || oldConsole.debug, logger, 4, false);
+		},
+		get time() {
+			return bindCall(oldConsole.time || oldConsole.debug, logger, 4, false);
+		},
+		get timeEnd() {
+			return bindCall(oldConsole.timeEnd || oldConsole.debug, logger, 4, false);
+		},
+		get timeLog() {
+			return bindCall(oldConsole.timeLog || oldConsole.debug, logger, 4, false);
+		},
+		get level(): number | undefined {
+			return namespaceLevel;
+		},
+		set level(newLevel: number) {
+			namespaceLevel = newLevel;
+		},
+		get traceLevel(): number | undefined {
+			return namespaceTraceLevel;
+		},
+		set traceLevel(newLevel: number) {
+			namespaceTraceLevel = newLevel;
+		},
+		enabled: enabled(namespace, {disabledRegexps, enabledRegexps}),
+	};
+
+	const values = assignedValues[namespace];
+	if (values) {
+		assignValues(logger, values);
+		delete assignedValues[namespace];
+	}
+
+	return logger;
 };
 
-const logLevels: {[name: string]: number} = {error: 1, warn: 2, info: 3, log: 4, debug: 5, trace: 6};
+const logLevels: {[name: string]: number} = {error: 1, warn: 2, info: 3, debug: 4, trace: 5};
 
 factory.level = 2;
 factory.traceLevel = 0;
@@ -152,15 +159,15 @@ factory.traceLevel = 0;
 factory.setTraceLevelFor = (namespaces: string, newLevel: number) => {
 	processNamespaces(namespaces || '*', {disabledRegexps: [], enabledRegexps: []}, (namespace, enabled) => {
 		if (enabled) {
-			loggers[namespace].traceLevel = newLevel;
+			_loggers[namespace].traceLevel = newLevel;
 		}
 	});
 };
 factory.disable = () => {
 	disabledRegexps.splice(0, disabledRegexps.length);
 	enabledRegexps.splice(0, enabledRegexps.length);
-	for (const namespace of Object.keys(loggers)) {
-		loggers[namespace].enabled = false;
+	for (const namespace of Object.keys(_loggers)) {
+		_loggers[namespace].enabled = false;
 	}
 	try {
 		localStorage.removeItem('debug');
@@ -177,7 +184,7 @@ factory.enable = (namespaces?: string) => {
 	processNamespaces(
 		namespaces,
 		{disabledRegexps, enabledRegexps},
-		(namespace, enabled) => (loggers[namespace].enabled = enabled),
+		(namespace, enabled) => (_loggers[namespace].enabled = enabled),
 	);
 	try {
 		localStorage.setItem('debug', namespaces);
@@ -231,7 +238,7 @@ function processNamespaces(
 		}
 	}
 
-	for (const namespace of Object.keys(loggers)) {
+	for (const namespace of Object.keys(_loggers)) {
 		func(namespace, enabled(namespace, {disabledRegexps, enabledRegexps}));
 	}
 }
@@ -306,7 +313,7 @@ for (const variable of vars) {
 		factory.level = (logLevels[val] || parseInt(val) || factory.level) as number;
 	} else if (variable.startsWith('traceLevel=')) {
 		const val = variable.slice(11);
-		factory.traceLevel = (logLevels[val] || parseInt(val) || factory.level) as number;
+		factory.traceLevel = (logLevels[val] || parseInt(val) || factory.traceLevel) as number;
 	} else if (variable.startsWith('debugLabel')) {
 		const val = variable.slice(11);
 		if (val) {
@@ -321,4 +328,22 @@ if (typeof window !== 'undefined') {
 	(window as any)._logFactory = factory;
 } else if (typeof global !== 'undefined') {
 	(global as any)._logFactory = factory;
+}
+
+function assignValues(logger: CLogger, values: LoggerValues) {
+	if ('level' in values) {
+		logger.level = values.level;
+	}
+	if ('traceLevel' in values) {
+		logger.traceLevel = values.traceLevel;
+	}
+}
+
+export function setupLogger(namespace: string, values: LoggerValues) {
+	const logger = _loggers[namespace];
+	if (logger) {
+		assignValues(logger, values);
+	} else {
+		assignedValues[namespace] = {...values};
+	}
 }

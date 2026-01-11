@@ -16,8 +16,8 @@ type Logger = {
 type CLogger = Logger & {
     namespace: string;
     decoration?: string;
-    level: number;
-    traceLevel: number;
+    level: number | undefined;
+    traceLevel: number | undefined;
     enabled: boolean;
 };
 type G = Record<string, unknown> & {
@@ -29,8 +29,8 @@ declare const W: G;
 declare const oldConsole: Console;
 declare const disabledRegexps: RegExp[];
 declare const enabledRegexps: RegExp[];
-declare function bindCall<T>(logFunc: (...args: T[]) => void, logger: CLogger, localTraceLevel: number, level: number, allowDecoration?: boolean): (...args: T[]) => void;
-declare const loggers: {
+declare function bindCall<T>(logFunc: (...args: T[]) => void, logger: CLogger, level: number, allowDecoration?: boolean): (...args: T[]) => void;
+declare const _loggers: {
     [namespace: string]: CLogger;
 };
 declare function write(msg: string): void;

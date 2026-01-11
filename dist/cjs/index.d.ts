@@ -2,9 +2,13 @@ import { Logger } from 'named-logs';
 export type CLogger = Logger & {
     namespace: string;
     decoration?: string;
-    level: number;
-    traceLevel: number;
+    level: number | undefined;
+    traceLevel: number | undefined;
     enabled: boolean;
+};
+type LoggerValues = {
+    level?: number | undefined;
+    traceLevel?: number | undefined;
 };
 export declare const factory: {
     (namespace: string, options?: {
@@ -19,4 +23,6 @@ export declare const factory: {
 };
 export declare function replaceConsole(namespace?: string): Console;
 export declare function hookup(): void;
+export declare function setupLogger(namespace: string, values: LoggerValues): void;
+export {};
 //# sourceMappingURL=index.d.ts.map

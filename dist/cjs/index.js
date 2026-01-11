@@ -3,15 +3,16 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.factory = void 0;
 exports.replaceConsole = replaceConsole;
 exports.hookup = hookup;
+exports.setupLogger = setupLogger;
 const named_logs_1 = require("named-logs");
 const noop = () => undefined;
 const W = (typeof window !== 'undefined' ? window : globalThis);
 const oldConsole = W.console;
 const disabledRegexps = [];
 const enabledRegexps = [];
-function bindCall(logFunc, logger, localTraceLevel, level, allowDecoration) {
-    if (logger.enabled && (logger.level >= level || exports.factory.level >= level)) {
-        if (localTraceLevel >= level || exports.factory.traceLevel >= level) {
+function bindCall(logFunc, logger, level, allowDecoration) {
+    if (logger.enabled && (logger.level !== undefined ? logger.level >= level : exports.factory.level >= level)) {
+        if (logger.traceLevel !== undefined ? logger.traceLevel >= level : exports.factory.traceLevel >= level) {
             if (exports.factory.labelVisible) {
                 const label = typeof exports.factory.labelVisible === 'string' ? `${exports.factory.labelVisible}${logger.namespace}` : logger.namespace;
                 if (logger.decoration) {
@@ -44,96 +45,102 @@ function bindCall(logFunc, logger, localTraceLevel, level, allowDecoration) {
         return noop;
     }
 }
-const loggers = {};
+const assignedValues = {};
+const _loggers = {};
 function write(msg) {
     process.stdout.write(msg);
 }
 const factory = (namespace, options) => {
-    let logger = loggers[namespace];
+    let logger = _loggers[namespace];
     if (logger) {
         return logger;
     }
-    let level = exports.factory.level;
-    let traceLevel = exports.factory.traceLevel;
-    return (logger = loggers[namespace] =
-        {
-            namespace,
-            decoration: options === null || options === void 0 ? void 0 : options.decoration,
-            get assert() {
-                return bindCall(oldConsole.assert, logger, traceLevel, 1, false);
-            },
-            get error() {
-                return bindCall(oldConsole.error, logger, traceLevel, 1, true);
-            },
-            get warn() {
-                return bindCall(oldConsole.warn, logger, traceLevel, 2, true);
-            },
-            get info() {
-                return bindCall(oldConsole.info, logger, traceLevel, 3, true);
-            },
-            get write() {
-                if (typeof process !== 'undefined') {
-                    return bindCall(write, logger, traceLevel, 3, false);
-                }
-                else {
-                    return bindCall(oldConsole.info, logger, traceLevel, 3, false);
-                }
-            },
-            get log() {
-                return bindCall(oldConsole.log, logger, traceLevel, 4, true);
-            },
-            get debug() {
-                return bindCall(oldConsole.debug, logger, traceLevel, 5, true);
-            },
-            get trace() {
-                return bindCall(oldConsole.trace, logger, traceLevel, 6, true);
-            },
-            get dir() {
-                return bindCall(oldConsole.dir, logger, traceLevel, 5, false);
-            },
-            get table() {
-                return bindCall(oldConsole.table || oldConsole.debug, logger, traceLevel, 5, false);
-            },
-            get time() {
-                return bindCall(oldConsole.time || oldConsole.debug, logger, traceLevel, 5, false);
-            },
-            get timeEnd() {
-                return bindCall(oldConsole.timeEnd || oldConsole.debug, logger, traceLevel, 5, false);
-            },
-            get timeLog() {
-                return bindCall(oldConsole.timeLog || oldConsole.debug, logger, traceLevel, 5, false);
-            },
-            get level() {
-                return level;
-            },
-            set level(newLevel) {
-                level = newLevel;
-            },
-            get traceLevel() {
-                return traceLevel;
-            },
-            set traceLevel(newLevel) {
-                traceLevel = newLevel;
-            },
-            enabled: enabled(namespace, { disabledRegexps, enabledRegexps }),
-        });
+    let namespaceLevel = undefined;
+    let namespaceTraceLevel = undefined;
+    logger = _loggers[namespace] = {
+        namespace,
+        decoration: options === null || options === void 0 ? void 0 : options.decoration,
+        get assert() {
+            return bindCall(oldConsole.assert, logger, 1, false);
+        },
+        get error() {
+            return bindCall(oldConsole.error, logger, 1, true);
+        },
+        get warn() {
+            return bindCall(oldConsole.warn, logger, 2, true);
+        },
+        get info() {
+            return bindCall(oldConsole.info, logger, 3, true);
+        },
+        get write() {
+            if (typeof process !== 'undefined') {
+                return bindCall(write, logger, 3, false);
+            }
+            else {
+                return bindCall(oldConsole.info, logger, 3, false);
+            }
+        },
+        get log() {
+            return bindCall(oldConsole.log, logger, 3, true);
+        },
+        get debug() {
+            return bindCall(oldConsole.debug, logger, 4, true);
+        },
+        get trace() {
+            return bindCall(oldConsole.trace, logger, 5, true);
+        },
+        get dir() {
+            return bindCall(oldConsole.dir, logger, 4, false);
+        },
+        get table() {
+            return bindCall(oldConsole.table || oldConsole.debug, logger, 4, false);
+        },
+        get time() {
+            return bindCall(oldConsole.time || oldConsole.debug, logger, 4, false);
+        },
+        get timeEnd() {
+            return bindCall(oldConsole.timeEnd || oldConsole.debug, logger, 4, false);
+        },
+        get timeLog() {
+            return bindCall(oldConsole.timeLog || oldConsole.debug, logger, 4, false);
+        },
+        get level() {
+            return namespaceLevel;
+        },
+        set level(newLevel) {
+            namespaceLevel = newLevel;
+        },
+        get traceLevel() {
+            return namespaceTraceLevel;
+        },
+        set traceLevel(newLevel) {
+            namespaceTraceLevel = newLevel;
+        },
+        enabled: enabled(namespace, { disabledRegexps, enabledRegexps }),
+    };
+    const values = assignedValues[namespace];
+    if (values) {
+        assignValues(logger, values);
+        delete assignedValues[namespace];
+    }
+    return logger;
 };
 exports.factory = factory;
-const logLevels = { error: 1, warn: 2, info: 3, log: 4, debug: 5, trace: 6 };
+const logLevels = { error: 1, warn: 2, info: 3, debug: 4, trace: 5 };
 exports.factory.level = 2;
 exports.factory.traceLevel = 0;
 exports.factory.setTraceLevelFor = (namespaces, newLevel) => {
     processNamespaces(namespaces || '*', { disabledRegexps: [], enabledRegexps: [] }, (namespace, enabled) => {
         if (enabled) {
-            loggers[namespace].traceLevel = newLevel;
+            _loggers[namespace].traceLevel = newLevel;
         }
     });
 };
 exports.factory.disable = () => {
     disabledRegexps.splice(0, disabledRegexps.length);
     enabledRegexps.splice(0, enabledRegexps.length);
-    for (const namespace of Object.keys(loggers)) {
-        loggers[namespace].enabled = false;
+    for (const namespace of Object.keys(_loggers)) {
+        _loggers[namespace].enabled = false;
     }
     try {
         localStorage.removeItem('debug');
@@ -149,7 +156,7 @@ exports.factory.enable = (namespaces) => {
     else {
         namespaces = namespaces || '*';
     }
-    processNamespaces(namespaces, { disabledRegexps, enabledRegexps }, (namespace, enabled) => (loggers[namespace].enabled = enabled));
+    processNamespaces(namespaces, { disabledRegexps, enabledRegexps }, (namespace, enabled) => (_loggers[namespace].enabled = enabled));
     try {
         localStorage.setItem('debug', namespaces);
     }
@@ -189,7 +196,7 @@ function processNamespaces(namespaces, { disabledRegexps, enabledRegexps }, func
             enabledRegexps.push(new RegExp('^' + namespaces + '$'));
         }
     }
-    for (const namespace of Object.keys(loggers)) {
+    for (const namespace of Object.keys(_loggers)) {
         func(namespace, enabled(namespace, { disabledRegexps, enabledRegexps }));
     }
 }
@@ -248,7 +255,7 @@ for (const variable of vars) {
     }
     else if (variable.startsWith('traceLevel=')) {
         const val = variable.slice(11);
-        exports.factory.traceLevel = (logLevels[val] || parseInt(val) || exports.factory.level);
+        exports.factory.traceLevel = (logLevels[val] || parseInt(val) || exports.factory.traceLevel);
     }
     else if (variable.startsWith('debugLabel')) {
         const val = variable.slice(11);
@@ -265,5 +272,22 @@ if (typeof window !== 'undefined') {
 }
 else if (typeof global !== 'undefined') {
     global._logFactory = exports.factory;
+}
+function assignValues(logger, values) {
+    if ('level' in values) {
+        logger.level = values.level;
+    }
+    if ('traceLevel' in values) {
+        logger.traceLevel = values.traceLevel;
+    }
+}
+function setupLogger(namespace, values) {
+    const logger = _loggers[namespace];
+    if (logger) {
+        assignValues(logger, values);
+    }
+    else {
+        assignedValues[namespace] = Object.assign({}, values);
+    }
 }
 //# sourceMappingURL=index.js.map
