@@ -31,7 +31,7 @@ import {hookup} from 'named-logs-console';
 hookup();
 ```
 
-This will be default log all `named-logs` call
+This installs the factory for every `named-logs` logger. Loggers stay disabled until you enable them (see below).
 
 On a web page,
 
@@ -40,6 +40,32 @@ if the query string contains `debug=<namespace>` it will enable only the namespa
 if the query string contains `debugLevel=<logLevel>` it will set the global log level to the one specified.
 
 if the query string contains `traceLevel=<traceLevel>` it will set the transform any log with level lower or equal as trace (console.trace)
+
+## Install it before the libraries load
+
+A library built on `named-logs` usually creates its logger once, when its module is evaluated, and a logger created before a factory exists stays silent for good (see [named-logs](https://github.com/wighawag/named-logs#readme)). So the factory has to be in place before any such library is evaluated:
+
+- On a page, importing `named-logs-console` installs the factory at once (it sets `window._logFactory` while the module is evaluated), so make it the FIRST import of your entry file, or use the `<script>` tag above, in the head, before your bundle. ES modules evaluate their imports before their own body, so a `hookup()` call in the entry file's body comes too late for the libraries that file imports.
+- Loggers are all disabled until you enable them: set `debug=<namespaces>` in the query string, or `localStorage.debug`, or call `factory.enable('<namespaces>')`. On Node, use `NAMED_LOGS=<namespaces>`.
+
+## Workers
+
+A worker (Web Worker, SharedWorker, Service Worker) has its own `globalThis`, so the factory installed on the page does not reach it, and it needs its own. Two things differ there:
+
+- Importing the module is NOT enough in a worker. It only installs the factory on `window` (a page) or `global` (Node), and a worker has neither, so you must call `hookup()`. Do it in a module of its own, imported first by the worker's entry, so it runs before the libraries the worker imports are evaluated:
+
+  ```js
+  // log-hook.js, the first import of the worker
+  import {hookup, factory} from 'named-logs-console';
+  hookup();
+  factory.enable('*'); // or the namespaces you want
+  ```
+
+- A worker has no `localStorage`, and the page's query string does not apply to it. It reads `debug=`, `debugLevel=` and the like from its OWN script URL's query string, and otherwise every logger is disabled, hence the `factory.enable(...)` above.
+
+In a classic (non-module) worker, the `<script>` tag code above works too: put it at the top of the worker script, or load the published `dist/script-tag/index.js` with `importScripts` first. It sets `globalThis._logFactory` directly.
+
+## Logging from your app
 
 For logging inside the app you can import `named-logs`
 This will allow you to extract that code into the library without importing the overhead of `named-logs-console`
